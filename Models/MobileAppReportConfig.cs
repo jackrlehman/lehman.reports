@@ -3,11 +3,14 @@ namespace ReportBuilder.Models;
 public class MobileAppReportConfig
 {
     // Version
-    public string Version { get; set; } = "1.01";
+    public string Version { get; set; } = "1.02";
 
     // General Information
     public string CompanyName { get; set; } = "Your Company";
-    public string ReportMonth { get; set; } = string.Empty;
+
+    [System.Text.Json.Serialization.JsonConverter(typeof(MonthJsonConverter))]
+    public int ReportMonth { get; set; }
+
     public int ReportDay { get; set; }
     public int ReportYear { get; set; }
     public string CreatedByName { get; set; } = string.Empty;
@@ -15,9 +18,34 @@ public class MobileAppReportConfig
 
     // Last Report Date (Optional)
     public bool IncludeLastPeriodData { get; set; } = true;
-    public string LastReportMonth { get; set; } = string.Empty;
+
+    [System.Text.Json.Serialization.JsonConverter(typeof(MonthJsonConverter))]
+    public int LastReportMonth { get; set; }
+
     public int LastReportDay { get; set; }
     public int LastReportYear { get; set; }
+
+    // Helper method to format report date as MM/DD/YY
+    public string GetFormattedReportDate()
+    {
+        if (ReportMonth > 0 && ReportDay > 0 && ReportYear > 0)
+        {
+            var year = ReportYear % 100; // Get last 2 digits
+            return $"{ReportMonth}/{ReportDay}/{year:00}";
+        }
+        return string.Empty;
+    }
+
+    // Helper method to format last report date as MM/DD/YY
+    public string GetFormattedLastReportDate()
+    {
+        if (LastReportMonth > 0 && LastReportDay > 0 && LastReportYear > 0)
+        {
+            var year = LastReportYear % 100; // Get last 2 digits
+            return $"{LastReportMonth}/{LastReportDay}/{year:00}";
+        }
+        return string.Empty;
+    }
 
     // Section Toggles
     public bool IncludeExecutiveSummary { get; set; } = true;
@@ -39,7 +67,9 @@ public class MobileAppReportConfig
     public PlatformComparisonMetrics PlatformComparison { get; set; } = new();
 
     // Technical Specifications
-    public string AppSize { get; set; } = string.Empty;
+    [System.Text.Json.Serialization.JsonConverter(typeof(AppSizeJsonConverter))]
+    public double? AppSize { get; set; }
+    public string AppSizeUnit { get; set; } = "MB";
 
     // Method to auto-populate Platform Comparison from iOS and Android data
     public void SyncPlatformComparison()

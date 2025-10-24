@@ -333,20 +333,50 @@ h5 {
 
 /* Form Controls */
 .form-control, .form-select, input[type="text"], input[type="number"] {
-    background: var(--bg-tertiary);
+    background: var(--bg-tertiary) !important;
     border: 2px solid rgba(148, 163, 184, 0.2);
     border-radius: 0.75rem;
     padding: 0.75rem 1rem;
     transition: all 0.3s;
-    color: var(--text-primary);
+    color: var(--text-primary) !important;
     font-size: 0.9375rem;
+    -webkit-text-fill-color: var(--text-primary) !important;
+}
+
+/* Ensure placeholder is visible but distinct from actual text */
+.form-control::placeholder, input::placeholder {
+    color: var(--text-muted) !important;
+    opacity: 0.6;
+    -webkit-text-fill-color: var(--text-muted) !important;
 }
 
 .form-control:focus, .form-select:focus, input:focus {
     border-color: var(--accent-cyan);
     box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.2);
     outline: none;
-    background: var(--bg-elevated);
+    background: var(--bg-elevated) !important;
+    color: var(--text-primary) !important;
+    -webkit-text-fill-color: var(--text-primary) !important;
+}
+
+/* Additional overrides for Blazor InputNumber and InputText components */
+input.form-control.valid,
+input.form-control.invalid,
+input.form-control.modified,
+input.valid,
+input.invalid,
+input.modified {
+    color: var(--text-primary) !important;
+    -webkit-text-fill-color: var(--text-primary) !important;
+}
+
+/* Override any Bootstrap or browser autofill styles */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+    -webkit-text-fill-color: var(--text-primary) !important;
+    -webkit-box-shadow: 0 0 0 30px var(--bg-tertiary) inset !important;
 }
 
 .form-control:read-only, input:read-only {

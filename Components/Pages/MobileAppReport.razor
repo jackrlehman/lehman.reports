@@ -64,19 +64,19 @@
                             <div class="col-md-2">
                                 <div class="mb-3">
                                     <label class="form-label">Report Month</label>
-                                    <InputText @bind-Value="config.ReportMonth" class="form-control" placeholder="October" />
+                                    <InputNumber @bind-Value="config.ReportMonth" class="form-control" placeholder="10" />
                                 </div>
                             </div>
                             <div class="col-md-2">
                                 <div class="mb-3">
                                     <label class="form-label">Report Day</label>
-                                    <InputNumber @bind-Value="config.ReportDay" class="form-control" />
+                                    <InputNumber @bind-Value="config.ReportDay" class="form-control" placeholder="22" />
                                 </div>
                             </div>
                             <div class="col-md-2">
                                 <div class="mb-3">
                                     <label class="form-label">Report Year</label>
-                                    <InputNumber @bind-Value="config.ReportYear" class="form-control" />
+                                    <InputNumber @bind-Value="config.ReportYear" class="form-control" placeholder="2025" />
                                 </div>
                             </div>
                         </div>
@@ -110,19 +110,19 @@
                                 <div class="col-md-2">
                                     <div class="mb-3">
                                         <label class="form-label">Last Report Month</label>
-                                        <InputText @bind-Value="config.LastReportMonth" class="form-control" placeholder="September" />
+                                        <InputNumber @bind-Value="config.LastReportMonth" class="form-control" placeholder="9" />
                                     </div>
                                 </div>
                                 <div class="col-md-2">
                                     <div class="mb-3">
                                         <label class="form-label">Last Report Day</label>
-                                        <InputNumber @bind-Value="config.LastReportDay" class="form-control" />
+                                        <InputNumber @bind-Value="config.LastReportDay" class="form-control" placeholder="22" />
                                     </div>
                                 </div>
                                 <div class="col-md-2">
                                     <div class="mb-3">
                                         <label class="form-label">Last Report Year</label>
-                                        <InputNumber @bind-Value="config.LastReportYear" class="form-control" />
+                                        <InputNumber @bind-Value="config.LastReportYear" class="form-control" placeholder="2025" />
                                     </div>
                                 </div>
                             </div>
@@ -513,10 +513,20 @@
                         </div>
                         <div class="card-body">
                             <div class="row">
-                                <div class="col-md-6">
+                                <div class="col-md-4">
                                     <div class="mb-3">
                                         <label class="form-label">App Size</label>
-                                        <InputText @bind-Value="config.AppSize" class="form-control" placeholder="e.g., 45.2 MB" />
+                                        <InputNumber @bind-Value="config.AppSize" class="form-control" placeholder="e.g., 45.2" />
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="mb-3">
+                                        <label class="form-label">Unit</label>
+                                        <select @bind="config.AppSizeUnit" class="form-control">
+                                            <option value="KB">KB</option>
+                                            <option value="MB">MB</option>
+                                            <option value="GB">GB</option>
+                                        </select>
                                     </div>
                                 </div>
                             </div>
@@ -564,13 +574,13 @@
 
         // Set default date to today
         var today = DateTime.Now;
-        config.ReportMonth = today.ToString("MMMM");
+        config.ReportMonth = today.Month;
         config.ReportDay = today.Day;
         config.ReportYear = today.Year;
 
         // Set default last report date to last month
         var lastMonth = today.AddMonths(-1);
-        config.LastReportMonth = lastMonth.ToString("MMMM");
+        config.LastReportMonth = lastMonth.Month;
         config.LastReportDay = lastMonth.Day;
         config.LastReportYear = lastMonth.Year;
     }
