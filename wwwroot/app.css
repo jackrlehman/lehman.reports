@@ -139,6 +139,7 @@ h5 {
     transition: all 0.3s;
     padding: 0.5rem 1rem;
     border-radius: 0.5rem;
+    cursor: pointer;
 }
 
 .nav-link:hover {
@@ -371,6 +372,7 @@ h5 {
     width: 1.25rem;
     height: 1.25rem;
     transition: all 0.3s;
+    cursor: pointer;
 }
 
 .form-check-input:checked, input[type="checkbox"]:checked {
@@ -387,12 +389,14 @@ h5 {
     margin-left: 0.75rem;
     color: var(--text-primary);
     font-weight: 500;
+    cursor: pointer;
 }
 
 /* Text Area */
 textarea.form-control {
     min-height: 120px;
     resize: vertical;
+    color: var(--text-primary) !important;
 }
 
 /* Alerts */

@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(dotnet:*)",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(Remove-Item -Recurse -Force bin,obj)"
     ],
     "deny": [],
     "ask": []
