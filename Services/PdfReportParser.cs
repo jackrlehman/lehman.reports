@@ -309,10 +309,13 @@ public class PdfReportParser
         config.LastReportYear = config.ReportYear;
 
         // Clear current date so user fills in new month
-        var nextMonth = new DateTime(config.ReportYear, config.ReportMonth, config.ReportDay).AddMonths(1);
-        config.ReportMonth = nextMonth.Month;
-        config.ReportDay = nextMonth.Day;
-        config.ReportYear = nextMonth.Year;
+        if (config.ReportYear.HasValue && config.ReportMonth.HasValue && config.ReportDay.HasValue)
+        {
+            var nextMonth = new DateTime(config.ReportYear.Value, config.ReportMonth.Value, config.ReportDay.Value).AddMonths(1);
+            config.ReportMonth = nextMonth.Month;
+            config.ReportDay = nextMonth.Day;
+            config.ReportYear = nextMonth.Year;
+        }
 
         // iOS Metrics - move current to last
         config.IOSMetrics.ImpressionsLast = config.IOSMetrics.Impressions;

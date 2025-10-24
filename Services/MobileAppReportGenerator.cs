@@ -58,7 +58,7 @@ public class MobileAppReportGenerator : IReportGenerator<MobileAppReportConfig>
                 row.RelativeItem().AlignLeft().Text(text =>
                 {
                     text.DefaultTextStyle(x => x.FontSize(8).FontColor(Colors.Grey.Darken1));
-                    text.Span($"Report Version {config.Version} | Generated: {DateTime.Now:M/d/yy h:mm tt}");
+                    text.Span($"Report Version {config.Version} | Generated: {DateTime.Now:M/d/yy HH:mm}");
                 });
 
                 row.RelativeItem().AlignCenter(); // Empty space for balance
@@ -186,20 +186,20 @@ public class MobileAppReportGenerator : IReportGenerator<MobileAppReportConfig>
                 table.Header(header =>
                 {
                     header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text("Metric").FontColor(Colors.White).Bold();
-                    header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text($"{config.GetFormattedReportDate()}").FontColor(Colors.White).Bold();
-                    header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text($"{config.GetFormattedLastReportDate()}").FontColor(Colors.White).Bold();
-                    header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text("% Change").FontColor(Colors.White).Bold();
+                    header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text($"As of {config.GetFormattedReportDate()}").FontColor(Colors.White).Bold();
+                    header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text($"As of {config.GetFormattedLastReportDate()}").FontColor(Colors.White).Bold();
+                    header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text("Percent Change").FontColor(Colors.White).Bold();
                 });
 
                 // Rows
-                AddTableRow(table, "Impressions", config.IOSMetrics.Impressions, config.IOSMetrics.ImpressionsLast, config.IOSMetrics.ImpressionsChange, config.IncludeLastPeriodData);
-                AddTableRow(table, "Product Page Views", config.IOSMetrics.ProductPageViews, config.IOSMetrics.ProductPageViewsLast, config.IOSMetrics.ProductPageViewsChange, config.IncludeLastPeriodData, true);
-                AddTableRow(table, "Conversion Rate", config.IOSMetrics.ConversionRate, config.IOSMetrics.ConversionRateLast, config.IOSMetrics.ConversionRateChange, config.IncludeLastPeriodData);
-                AddTableRow(table, "Total Downloads", config.IOSMetrics.TotalDownloads, config.IOSMetrics.TotalDownloadsLast, config.IOSMetrics.TotalDownloadsChange, config.IncludeLastPeriodData, true);
-                AddTableRow(table, "Daily Downloads", config.IOSMetrics.DailyDownloads, config.IOSMetrics.DailyDownloadsLast, config.IOSMetrics.DailyDownloadsChange, config.IncludeLastPeriodData);
-                AddTableRow(table, "Sessions per Device", config.IOSMetrics.SessionsPerDevice, config.IOSMetrics.SessionsPerDeviceLast, config.IOSMetrics.SessionsPerDeviceChange, config.IncludeLastPeriodData, true);
-                AddTableRow(table, "Crash Rate per Session", config.IOSMetrics.CrashRatePerSession, config.IOSMetrics.CrashRatePerSessionLast, config.IOSMetrics.CrashRatePerSessionChange, config.IncludeLastPeriodData, true, true);
-                AddTableRow(table, "Total Crashes", config.IOSMetrics.TotalCrashes, config.IOSMetrics.TotalCrashesLast, config.IOSMetrics.TotalCrashesChange, config.IncludeLastPeriodData, true);
+                AddTableRow(table, "Impressions", config.IOSMetrics.Impressions, config.IOSMetrics.ImpressionsLast, config.IOSMetrics.ImpressionsChange, config.IncludeLastPeriodData, 0);
+                AddTableRow(table, "Product Page Views", config.IOSMetrics.ProductPageViews, config.IOSMetrics.ProductPageViewsLast, config.IOSMetrics.ProductPageViewsChange, config.IncludeLastPeriodData, 1);
+                AddTableRow(table, "Conversion Rate", config.IOSMetrics.ConversionRate, config.IOSMetrics.ConversionRateLast, config.IOSMetrics.ConversionRateChange, config.IncludeLastPeriodData, 2);
+                AddTableRow(table, "Total Downloads", config.IOSMetrics.TotalDownloads, config.IOSMetrics.TotalDownloadsLast, config.IOSMetrics.TotalDownloadsChange, config.IncludeLastPeriodData, 3);
+                AddTableRow(table, "Daily Downloads", config.IOSMetrics.DailyDownloads, config.IOSMetrics.DailyDownloadsLast, config.IOSMetrics.DailyDownloadsChange, config.IncludeLastPeriodData, 4);
+                AddTableRow(table, "Sessions per Device", config.IOSMetrics.SessionsPerDevice, config.IOSMetrics.SessionsPerDeviceLast, config.IOSMetrics.SessionsPerDeviceChange, config.IncludeLastPeriodData, 5);
+                AddTableRow(table, "Crash Rate per Session", config.IOSMetrics.CrashRatePerSession, config.IOSMetrics.CrashRatePerSessionLast, config.IOSMetrics.CrashRatePerSessionChange, config.IncludeLastPeriodData, 6, true);
+                AddTableRow(table, "Total Crashes", config.IOSMetrics.TotalCrashes, config.IOSMetrics.TotalCrashesLast, config.IOSMetrics.TotalCrashesChange, config.IncludeLastPeriodData, 7);
             }
             else
             {
@@ -213,18 +213,18 @@ public class MobileAppReportGenerator : IReportGenerator<MobileAppReportConfig>
                 table.Header(header =>
                 {
                     header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text("Metric").FontColor(Colors.White).Bold();
-                    header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text($"{config.GetFormattedReportDate()}").FontColor(Colors.White).Bold();
+                    header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text($"As of {config.GetFormattedReportDate()}").FontColor(Colors.White).Bold();
                 });
 
                 // Rows
-                AddTableRow(table, "Impressions", config.IOSMetrics.Impressions, null, null, config.IncludeLastPeriodData);
-                AddTableRow(table, "Product Page Views", config.IOSMetrics.ProductPageViews, null, null, config.IncludeLastPeriodData, true);
-                AddTableRow(table, "Conversion Rate", config.IOSMetrics.ConversionRate, null, null, config.IncludeLastPeriodData);
-                AddTableRow(table, "Total Downloads", config.IOSMetrics.TotalDownloads, null, null, config.IncludeLastPeriodData, true);
-                AddTableRow(table, "Daily Downloads", config.IOSMetrics.DailyDownloads, null, null, config.IncludeLastPeriodData);
-                AddTableRow(table, "Sessions per Device", config.IOSMetrics.SessionsPerDevice, null, null, config.IncludeLastPeriodData, true);
-                AddTableRow(table, "Crash Rate per Session", config.IOSMetrics.CrashRatePerSession, null, null, config.IncludeLastPeriodData, true, true);
-                AddTableRow(table, "Total Crashes", config.IOSMetrics.TotalCrashes, null, null, config.IncludeLastPeriodData, true);
+                AddTableRow(table, "Impressions", config.IOSMetrics.Impressions, null, null, config.IncludeLastPeriodData, 0);
+                AddTableRow(table, "Product Page Views", config.IOSMetrics.ProductPageViews, null, null, config.IncludeLastPeriodData, 1);
+                AddTableRow(table, "Conversion Rate", config.IOSMetrics.ConversionRate, null, null, config.IncludeLastPeriodData, 2);
+                AddTableRow(table, "Total Downloads", config.IOSMetrics.TotalDownloads, null, null, config.IncludeLastPeriodData, 3);
+                AddTableRow(table, "Daily Downloads", config.IOSMetrics.DailyDownloads, null, null, config.IncludeLastPeriodData, 4);
+                AddTableRow(table, "Sessions per Device", config.IOSMetrics.SessionsPerDevice, null, null, config.IncludeLastPeriodData, 5);
+                AddTableRow(table, "Crash Rate per Session", config.IOSMetrics.CrashRatePerSession, null, null, config.IncludeLastPeriodData, 6, true);
+                AddTableRow(table, "Total Crashes", config.IOSMetrics.TotalCrashes, null, null, config.IncludeLastPeriodData, 7);
             }
         });
     }
@@ -249,25 +249,25 @@ public class MobileAppReportGenerator : IReportGenerator<MobileAppReportConfig>
                 table.Header(header =>
                 {
                     header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text("Source").FontColor(Colors.White).Bold();
-                    header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text($"{config.GetFormattedReportDate()} %").FontColor(Colors.White).Bold().FontSize(9);
-                    header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text($"{config.GetFormattedReportDate()} Downloads").FontColor(Colors.White).Bold().FontSize(8);
-                    header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text($"{config.GetFormattedLastReportDate()} %").FontColor(Colors.White).Bold().FontSize(9);
-                    header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text($"{config.GetFormattedLastReportDate()} Downloads").FontColor(Colors.White).Bold().FontSize(8);
-                    header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text("% Change").FontColor(Colors.White).Bold();
+                    header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text($"Percent, as of {config.GetFormattedReportDate()}").FontColor(Colors.White).Bold().FontSize(9);
+                    header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text($"Downloads, as of {config.GetFormattedReportDate()}").FontColor(Colors.White).Bold().FontSize(8);
+                    header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text($"Percent, as of {config.GetFormattedLastReportDate()}").FontColor(Colors.White).Bold().FontSize(9);
+                    header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text($"Downloads, as of {config.GetFormattedLastReportDate()}").FontColor(Colors.White).Bold().FontSize(8);
+                    header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text("Percent Change").FontColor(Colors.White).Bold();
                 });
 
                 // Rows
-                bool alternate = false;
+                int rowIndex = 0;
                 foreach (var source in config.IOSMetrics.DownloadSources)
                 {
-                    var bgColor = alternate ? Colors.Grey.Lighten3 : Colors.White;
+                    var bgColor = (rowIndex % 2 == 0) ? Colors.White : Colors.Grey.Lighten3;
                     table.Cell().Background(bgColor).Padding(6).Text(source.Name);
                     table.Cell().Background(bgColor).Padding(6).Text(FormatPercentage(source.CurrentPercentage));
                     table.Cell().Background(bgColor).Padding(6).Text(FormatValue(source.CurrentDownloads));
                     table.Cell().Background(bgColor).Padding(6).Text(FormatPercentage(source.LastPercentage));
                     table.Cell().Background(bgColor).Padding(6).Text(FormatValue(source.LastDownloads));
                     table.Cell().Background(bgColor).Padding(6).Text(FormatPercentChange(source.DownloadsChange));
-                    alternate = !alternate;
+                    rowIndex++;
                 }
             }
             else
@@ -283,19 +283,19 @@ public class MobileAppReportGenerator : IReportGenerator<MobileAppReportConfig>
                 table.Header(header =>
                 {
                     header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text("Source").FontColor(Colors.White).Bold();
-                    header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text($"{config.GetFormattedReportDate()} %").FontColor(Colors.White).Bold().FontSize(9);
-                    header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text($"{config.GetFormattedReportDate()} Downloads").FontColor(Colors.White).Bold().FontSize(8);
+                    header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text($"Percent, as of {config.GetFormattedReportDate()}").FontColor(Colors.White).Bold().FontSize(9);
+                    header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text($"Downloads, as of {config.GetFormattedReportDate()}").FontColor(Colors.White).Bold().FontSize(8);
                 });
 
                 // Rows
-                bool alternate = false;
+                int rowIndex = 0;
                 foreach (var source in config.IOSMetrics.DownloadSources)
                 {
-                    var bgColor = alternate ? Colors.Grey.Lighten3 : Colors.White;
+                    var bgColor = (rowIndex % 2 == 0) ? Colors.White : Colors.Grey.Lighten3;
                     table.Cell().Background(bgColor).Padding(6).Text(source.Name);
                     table.Cell().Background(bgColor).Padding(6).Text(FormatPercentage(source.CurrentPercentage));
                     table.Cell().Background(bgColor).Padding(6).Text(FormatValue(source.CurrentDownloads));
-                    alternate = !alternate;
+                    rowIndex++;
                 }
             }
         });
@@ -332,15 +332,15 @@ public class MobileAppReportGenerator : IReportGenerator<MobileAppReportConfig>
                 table.Header(header =>
                 {
                     header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text("Metric").FontColor(Colors.White).Bold();
-                    header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text($"{config.GetFormattedReportDate()}").FontColor(Colors.White).Bold();
-                    header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text($"{config.GetFormattedLastReportDate()}").FontColor(Colors.White).Bold();
-                    header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text("% Change").FontColor(Colors.White).Bold();
+                    header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text($"As of {config.GetFormattedReportDate()}").FontColor(Colors.White).Bold();
+                    header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text($"As of {config.GetFormattedLastReportDate()}").FontColor(Colors.White).Bold();
+                    header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text("Percent Change").FontColor(Colors.White).Bold();
                 });
 
                 // Rows
-                AddTableRow(table, "Total Installs", config.AndroidMetrics.TotalInstalls, config.AndroidMetrics.TotalInstallsLast, config.AndroidMetrics.TotalInstallsChange, config.IncludeLastPeriodData);
-                AddTableRow(table, "Daily Downloads", config.AndroidMetrics.DailyDownloads, config.AndroidMetrics.DailyDownloadsLast, config.AndroidMetrics.DailyDownloadsChange, config.IncludeLastPeriodData, true);
-                AddTableRow(table, "Crash Rate per Session", config.AndroidMetrics.CrashRatePerSession, config.AndroidMetrics.CrashRatePerSessionLast, config.AndroidMetrics.CrashRatePerSessionChange, config.IncludeLastPeriodData, true, true);
+                AddTableRow(table, "Total Installs", config.AndroidMetrics.TotalInstalls, config.AndroidMetrics.TotalInstallsLast, config.AndroidMetrics.TotalInstallsChange, config.IncludeLastPeriodData, 0);
+                AddTableRow(table, "Daily Downloads", config.AndroidMetrics.DailyDownloads, config.AndroidMetrics.DailyDownloadsLast, config.AndroidMetrics.DailyDownloadsChange, config.IncludeLastPeriodData, 1);
+                AddTableRow(table, "Crash Rate per Session", config.AndroidMetrics.CrashRatePerSession, config.AndroidMetrics.CrashRatePerSessionLast, config.AndroidMetrics.CrashRatePerSessionChange, config.IncludeLastPeriodData, 2, true);
             }
             else
             {
@@ -354,13 +354,13 @@ public class MobileAppReportGenerator : IReportGenerator<MobileAppReportConfig>
                 table.Header(header =>
                 {
                     header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text("Metric").FontColor(Colors.White).Bold();
-                    header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text($"{config.GetFormattedReportDate()}").FontColor(Colors.White).Bold();
+                    header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text($"As of {config.GetFormattedReportDate()}").FontColor(Colors.White).Bold();
                 });
 
                 // Rows
-                AddTableRow(table, "Total Installs", config.AndroidMetrics.TotalInstalls, null, null, config.IncludeLastPeriodData);
-                AddTableRow(table, "Daily Downloads", config.AndroidMetrics.DailyDownloads, null, null, config.IncludeLastPeriodData, true);
-                AddTableRow(table, "Crash Rate per Session", config.AndroidMetrics.CrashRatePerSession, null, null, config.IncludeLastPeriodData, true, true);
+                AddTableRow(table, "Total Installs", config.AndroidMetrics.TotalInstalls, null, null, config.IncludeLastPeriodData, 0);
+                AddTableRow(table, "Daily Downloads", config.AndroidMetrics.DailyDownloads, null, null, config.IncludeLastPeriodData, 1);
+                AddTableRow(table, "Crash Rate per Session", config.AndroidMetrics.CrashRatePerSession, null, null, config.IncludeLastPeriodData, 2, true);
             }
         });
     }
@@ -386,47 +386,48 @@ public class MobileAppReportGenerator : IReportGenerator<MobileAppReportConfig>
             {
                 table.ColumnsDefinition(columns =>
                 {
-                    columns.RelativeColumn(1.5f);
-                    columns.RelativeColumn(1);
-                    columns.RelativeColumn(1);
-                    columns.RelativeColumn(1);
-                    columns.RelativeColumn(1);
-                    columns.RelativeColumn(1);
-                    columns.RelativeColumn(1);
+                    columns.RelativeColumn(2f);
+                    columns.RelativeColumn(1.2f);
+                    columns.RelativeColumn(1.2f);
+                    columns.RelativeColumn(1f);
+                    columns.RelativeColumn(1f);
                 });
 
-                // Header
+                // Header - Two rows for better organization
                 table.Header(header =>
                 {
-                    header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text("Metric").FontColor(Colors.White).Bold();
-                    header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text($"iOS {config.GetFormattedReportDate()}").FontColor(Colors.White).Bold().FontSize(9);
-                    header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text($"Android {config.GetFormattedReportDate()}").FontColor(Colors.White).Bold().FontSize(9);
-                    header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text($"iOS {config.GetFormattedLastReportDate()}").FontColor(Colors.White).Bold().FontSize(9);
-                    header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text($"Android {config.GetFormattedLastReportDate()}").FontColor(Colors.White).Bold().FontSize(9);
-                    header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text("iOS % Change").FontColor(Colors.White).Bold().FontSize(8);
-                    header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text("Android % Change").FontColor(Colors.White).Bold().FontSize(8);
+                    // First header row - Platform grouping
+                    header.Cell().RowSpan(2).Background(Colors.Blue.Darken2).Padding(8).Text("Metric").FontColor(Colors.White).Bold();
+                    header.Cell().ColumnSpan(2).Background(Colors.Blue.Darken3).Padding(8).Text($"Current Period (as of {config.GetFormattedReportDate()})").FontColor(Colors.White).Bold().FontSize(9).AlignCenter();
+                    header.Cell().ColumnSpan(2).Background(Colors.Blue.Darken3).Padding(8).Text("Percent Change").FontColor(Colors.White).Bold().FontSize(9).AlignCenter();
+
+                    // Second header row - Specific platforms
+                    header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text("iOS").FontColor(Colors.White).Bold().FontSize(9);
+                    header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text("Android").FontColor(Colors.White).Bold().FontSize(9);
+                    header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text("iOS").FontColor(Colors.White).Bold().FontSize(8);
+                    header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text("Android").FontColor(Colors.White).Bold().FontSize(8);
                 });
 
                 // Rows
                 AddPlatformComparisonRow(table, "Total Downloads",
                     config.PlatformComparison.IOSTotalDownloads, config.PlatformComparison.AndroidTotalDownloads,
                     config.PlatformComparison.IOSTotalDownloadsLast, config.PlatformComparison.AndroidTotalDownloadsLast,
-                    config.PlatformComparison.IOSTotalDownloadsChange, config.PlatformComparison.AndroidTotalDownloadsChange, config.IncludeLastPeriodData);
+                    config.PlatformComparison.IOSTotalDownloadsChange, config.PlatformComparison.AndroidTotalDownloadsChange, config.IncludeLastPeriodData, 0);
 
                 AddPlatformComparisonRow(table, $"Download base of {config.CompanyName} All",
                     config.PlatformComparison.IOSUserPercent, config.PlatformComparison.AndroidUserPercent,
                     config.PlatformComparison.IOSUserPercentLast, config.PlatformComparison.AndroidUserPercentLast,
-                    config.PlatformComparison.IOSUserPercentChange, config.PlatformComparison.AndroidUserPercentChange, config.IncludeLastPeriodData, true, true);
+                    config.PlatformComparison.IOSUserPercentChange, config.PlatformComparison.AndroidUserPercentChange, config.IncludeLastPeriodData, 1, true);
 
                 AddPlatformComparisonRow(table, "Daily Downloads",
                     config.PlatformComparison.IOSDailyDownloads, config.PlatformComparison.AndroidDailyDownloads,
                     config.PlatformComparison.IOSDailyDownloadsLast, config.PlatformComparison.AndroidDailyDownloadsLast,
-                    config.PlatformComparison.IOSDailyDownloadsChange, config.PlatformComparison.AndroidDailyDownloadsChange, config.IncludeLastPeriodData);
+                    config.PlatformComparison.IOSDailyDownloadsChange, config.PlatformComparison.AndroidDailyDownloadsChange, config.IncludeLastPeriodData, 2);
 
                 AddPlatformComparisonRow(table, "Crash Rate",
                     config.PlatformComparison.IOSCrashRate, config.PlatformComparison.AndroidCrashRate,
                     config.PlatformComparison.IOSCrashRateLast, config.PlatformComparison.AndroidCrashRateLast,
-                    config.PlatformComparison.IOSCrashRateChange, config.PlatformComparison.AndroidCrashRateChange, config.IncludeLastPeriodData, true, true);
+                    config.PlatformComparison.IOSCrashRateChange, config.PlatformComparison.AndroidCrashRateChange, config.IncludeLastPeriodData, 3, true);
             }
             else
             {
@@ -441,26 +442,26 @@ public class MobileAppReportGenerator : IReportGenerator<MobileAppReportConfig>
                 table.Header(header =>
                 {
                     header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text("Metric").FontColor(Colors.White).Bold();
-                    header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text($"iOS {config.GetFormattedReportDate()}").FontColor(Colors.White).Bold().FontSize(9);
-                    header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text($"Android {config.GetFormattedReportDate()}").FontColor(Colors.White).Bold().FontSize(9);
+                    header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text($"iOS, as of {config.GetFormattedReportDate()}").FontColor(Colors.White).Bold().FontSize(9);
+                    header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text($"Android, as of {config.GetFormattedReportDate()}").FontColor(Colors.White).Bold().FontSize(9);
                 });
 
                 // Rows
                 AddPlatformComparisonRow(table, "Total Downloads",
                     config.PlatformComparison.IOSTotalDownloads, config.PlatformComparison.AndroidTotalDownloads,
-                    null, null, null, null, config.IncludeLastPeriodData);
+                    null, null, null, null, config.IncludeLastPeriodData, 0);
 
-                AddPlatformComparisonRow(table, $"User % of all {config.CompanyName} Apps",
+                AddPlatformComparisonRow(table, $"User Percent of all {config.CompanyName} Apps",
                     config.PlatformComparison.IOSUserPercent, config.PlatformComparison.AndroidUserPercent,
-                    null, null, null, null, config.IncludeLastPeriodData, true);
+                    null, null, null, null, config.IncludeLastPeriodData, 1, true);
 
                 AddPlatformComparisonRow(table, "Daily Downloads",
                     config.PlatformComparison.IOSDailyDownloads, config.PlatformComparison.AndroidDailyDownloads,
-                    null, null, null, null, config.IncludeLastPeriodData);
+                    null, null, null, null, config.IncludeLastPeriodData, 2);
 
                 AddPlatformComparisonRow(table, "Crash Rate",
                     config.PlatformComparison.IOSCrashRate, config.PlatformComparison.AndroidCrashRate,
-                    null, null, null, null, config.IncludeLastPeriodData, true);
+                    null, null, null, null, config.IncludeLastPeriodData, 3, true);
             }
         });
     }
@@ -487,9 +488,9 @@ public class MobileAppReportGenerator : IReportGenerator<MobileAppReportConfig>
         });
     }
 
-    private void AddTableRow(TableDescriptor table, string metric, double? current, double? last, double? change, bool includeLastPeriod, bool alternate = false, bool isPercent = false)
+    private void AddTableRow(TableDescriptor table, string metric, double? current, double? last, double? change, bool includeLastPeriod, int rowIndex = 0, bool isPercent = false)
     {
-        var bgColor = alternate ? Colors.Grey.Lighten3 : Colors.White;
+        var bgColor = (rowIndex % 2 == 0) ? Colors.White : Colors.Grey.Lighten3;
         table.Cell().Background(bgColor).Padding(6).Text(metric);
         table.Cell().Background(bgColor).Padding(6).Text(isPercent ? FormatPercentage(current) : FormatValue(current));
 
@@ -503,17 +504,15 @@ public class MobileAppReportGenerator : IReportGenerator<MobileAppReportConfig>
     private void AddPlatformComparisonRow(TableDescriptor table, string metric,
         double? iosCurrent, double? androidCurrent,
         double? iosLast, double? androidLast,
-        double? iosChange, double? androidChange, bool includeLastPeriod, bool alternate = false, bool isPercent = false)
+        double? iosChange, double? androidChange, bool includeLastPeriod, int rowIndex = 0, bool isPercent = false)
     {
-        var bgColor = alternate ? Colors.Grey.Lighten3 : Colors.White;
+        var bgColor = (rowIndex % 2 == 0) ? Colors.White : Colors.Grey.Lighten3;
         table.Cell().Background(bgColor).Padding(6).Text(metric);
         table.Cell().Background(bgColor).Padding(6).Text(isPercent ? FormatPercentage(iosCurrent) : FormatValue(iosCurrent));
         table.Cell().Background(bgColor).Padding(6).Text(isPercent ? FormatPercentage(androidCurrent) : FormatValue(androidCurrent));
 
         if (includeLastPeriod)
         {
-            table.Cell().Background(bgColor).Padding(6).Text(isPercent ? FormatPercentage(iosLast) : FormatValue(iosLast));
-            table.Cell().Background(bgColor).Padding(6).Text(isPercent ? FormatPercentage(androidLast) : FormatValue(androidLast));
             table.Cell().Background(bgColor).Padding(6).Text(FormatPercentChange(iosChange));
             table.Cell().Background(bgColor).Padding(6).Text(FormatPercentChange(androidChange));
         }

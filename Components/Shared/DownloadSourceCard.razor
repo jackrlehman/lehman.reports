@@ -1,0 +1,56 @@
+@using ReportBuilder.Models
+
+<div class="col-md-6 mb-3">
+    <div class="card bg-light h-100">
+        <div class="card-body">
+            <div class="row align-items-end">
+                <div class="@(IncludeLastPeriod ? "col-md-4" : "col-md-5")">
+                    <div>
+                        <label class="form-label">Source Name</label>
+                        <InputText @bind-Value="Source.Name" class="form-control" />
+                    </div>
+                </div>
+                <div class="@(IncludeLastPeriod ? "col-md-3" : "col-md-5")">
+                    <div>
+                        <label class="form-label">Current</label>
+                        <InputNumber TValue="double?" @bind-Value="Source.CurrentDownloads" @bind-Value:after="HandleValueChanged" class="form-control" />
+                    </div>
+                </div>
+                @if (IncludeLastPeriod)
+                {
+                    <div class="col-md-3">
+                        <div>
+                            <label class="form-label">Last</label>
+                            <InputNumber TValue="double?" @bind-Value="Source.LastDownloads" @bind-Value:after="HandleValueChanged" class="form-control" />
+                        </div>
+                    </div>
+                }
+                <div class="col-md-2">
+                    <div>
+                        <label class="form-label">&nbsp;</label>
+                        <button type="button" class="btn btn-danger btn-delete-source w-100 d-flex align-items-center justify-content-center" style="height: 38px; padding: 0; font-size: 1.5rem; line-height: 1;" @onclick="OnRemove">×</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public DownloadSource Source { get; set; } = null!;
+
+    [Parameter]
+    public bool IncludeLastPeriod { get; set; }
+
+    [Parameter]
+    public EventCallback OnRemove { get; set; }
+
+    [Parameter]
+    public EventCallback OnValueChanged { get; set; }
+
+    private async Task HandleValueChanged()
+    {
+        await OnValueChanged.InvokeAsync();
+    }
+}

@@ -1,0 +1,19 @@
+@if (!string.IsNullOrEmpty(Message))
+{
+    <div class="alert @GetAlertClass() mb-4" role="alert" style="margin-top: 4rem;">
+        @Message
+    </div>
+}
+
+@code {
+    [Parameter]
+    public string Message { get; set; } = string.Empty;
+
+    [Parameter]
+    public bool IsSuccess { get; set; }
+
+    private string GetAlertClass()
+    {
+        return IsSuccess ? "alert-success" : "alert-danger";
+    }
+}

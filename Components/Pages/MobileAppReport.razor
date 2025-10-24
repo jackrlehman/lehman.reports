@@ -6,29 +6,45 @@
 
 <PageTitle>Mobile App Store Performance Report</PageTitle>
 
-<!-- Fixed Action Bar -->
-<div class="action-bar">
-    <InputFile id="pdfFileInput" OnChange="HandlePdfImport" accept=".pdf" style="display: none;" />
-    <InputFile id="jsonFileInput" OnChange="ImportJson" accept=".json" style="display: none;" />
+<!-- Hidden File Inputs -->
+<InputFile id="pdfFileInput" OnChange="HandlePdfImport" accept=".pdf" style="display: none;" />
+<InputFile id="jsonFileInput" OnChange="ImportJson" accept=".json" style="display: none;" />
 
-    <button type="button" class="btn btn-success" @onclick="TriggerPdfUpload" disabled="@isImporting">
-        @if (isImporting)
-        {
-            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-            <span>Importing...</span>
-        }
-        else
-        {
-            <span>Import PDF</span>
-        }
-    </button>
+<!-- Floating Action Button Menu -->
+<div class="fab-container">
+    @if (isFabMenuOpen)
+    {
+        <div class="fab-backdrop" @onclick="ToggleFabMenu"></div>
+    }
 
-    <button type="button" class="btn btn-info" @onclick="TriggerJsonUpload" disabled="@isImporting">
-        Import JSON
-    </button>
+    <div class="fab-menu @(isFabMenuOpen ? "open" : "")">
+        <FABMenuItem Icon="✕" Label="Clear Form" Title="Clear Form" CssClass="fab-menu-clear" OnClick="@ClearForm" />
 
-    <button type="button" class="btn btn-outline-secondary" @onclick="ExportConfig">
-        Export JSON
+        <FABMenuItem Icon="⬆" Label="Export JSON" Title="Export JSON" CssClass="fab-menu-export" OnClick="@ExportConfig" />
+
+        <FABMenuItem Icon="⬇" Label="Import JSON" Title="Import JSON" CssClass="fab-menu-import-json" OnClick="@TriggerJsonUpload" IsDisabled="@isImporting" />
+
+        <FABMenuItem CssClass="fab-menu-import-pdf" OnClick="@TriggerPdfUpload" IsDisabled="@isImporting" Title="Import PDF">
+            @if (isImporting)
+            {
+                <span class="fab-icon spinner-border spinner-border-sm"></span>
+                <span class="fab-label">Importing...</span>
+            }
+            else
+            {
+                <span class="fab-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+                        <path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11z"/>
+                        <path d="M8 14h8v2H8v-2zm0-3h8v2H8v-2z"/>
+                    </svg>
+                </span>
+                <span class="fab-label">Import PDF</span>
+            }
+        </FABMenuItem>
+    </div>
+
+    <button type="button" class="fab-button @(isFabMenuOpen ? "open" : "")" @onclick="ToggleFabMenu">
+        <span class="fab-button-icon">@(isFabMenuOpen ? "×" : "+")</span>
     </button>
 </div>
 
@@ -38,12 +54,13 @@
         <p style="color: var(--text-secondary); font-size: 1rem;">Generate comprehensive PDF reports with customizable metrics and comparisons</p>
     </div>
 
-    @if (!string.IsNullOrEmpty(importMessage))
-    {
-        <div class="alert @(importSuccess ? "alert-success" : "alert-danger") mb-4" role="alert" style="margin-top: 4rem;">
-            @importMessage
-        </div>
-    }
+    <AlertMessage Message="@importMessage" IsSuccess="@importSuccess" />
+
+    <ImportDialog
+        IsVisible="@showImportDialog"
+        OnImportToPrevious="@ImportToPreviousPeriod"
+        OnImportToCurrent="@ImportToCurrentPeriod"
+        OnCancel="@CancelImport" />
 
     <EditForm Model="@config" OnValidSubmit="GenerateReport">
         <div class="row">
@@ -54,33 +71,33 @@
                         <h5 class="mb-0">General Information</h5>
                     </div>
                     <div class="card-body">
-                        <div class="row">
+                        <div class="row align-inputs-bottom">
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label">Company Name</label>
-                                    <InputText @bind-Value="config.CompanyName" class="form-control" />
+                                    <InputText @bind-Value="config.CompanyName" class="form-control" placeholder="e.g., My Company" />
                                 </div>
                             </div>
                             <div class="col-md-2">
                                 <div class="mb-3">
                                     <label class="form-label">Report Month</label>
-                                    <InputNumber @bind-Value="config.ReportMonth" class="form-control" placeholder="10" />
+                                    <InputNumber TValue="int?" @bind-Value="config.ReportMonth" class="form-control" placeholder="@DateTime.Now.Month.ToString()" />
                                 </div>
                             </div>
                             <div class="col-md-2">
                                 <div class="mb-3">
                                     <label class="form-label">Report Day</label>
-                                    <InputNumber @bind-Value="config.ReportDay" class="form-control" placeholder="22" />
+                                    <InputNumber TValue="int?" @bind-Value="config.ReportDay" class="form-control" placeholder="@DateTime.Now.Day.ToString()" />
                                 </div>
                             </div>
                             <div class="col-md-2">
                                 <div class="mb-3">
                                     <label class="form-label">Report Year</label>
-                                    <InputNumber @bind-Value="config.ReportYear" class="form-control" placeholder="2025" />
+                                    <InputNumber TValue="int?" @bind-Value="config.ReportYear" class="form-control" placeholder="@DateTime.Now.Year.ToString()" />
                                 </div>
                             </div>
                         </div>
-                        <div class="row">
+                        <div class="row align-inputs-bottom">
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label">Created By Name</label>
@@ -106,23 +123,23 @@
                         </div>
                         @if (config.IncludeLastPeriodData)
                         {
-                            <div class="row">
+                            <div class="row align-inputs-bottom">
                                 <div class="col-md-2">
                                     <div class="mb-3">
                                         <label class="form-label">Last Report Month</label>
-                                        <InputNumber @bind-Value="config.LastReportMonth" class="form-control" placeholder="9" />
+                                        <InputNumber TValue="int?" @bind-Value="config.LastReportMonth" class="form-control" placeholder="9" />
                                     </div>
                                 </div>
                                 <div class="col-md-2">
                                     <div class="mb-3">
                                         <label class="form-label">Last Report Day</label>
-                                        <InputNumber @bind-Value="config.LastReportDay" class="form-control" placeholder="22" />
+                                        <InputNumber TValue="int?" @bind-Value="config.LastReportDay" class="form-control" placeholder="22" />
                                     </div>
                                 </div>
                                 <div class="col-md-2">
                                     <div class="mb-3">
                                         <label class="form-label">Last Report Year</label>
-                                        <InputNumber @bind-Value="config.LastReportYear" class="form-control" placeholder="2025" />
+                                        <InputNumber TValue="int?" @bind-Value="config.LastReportYear" class="form-control" placeholder="2025" />
                                     </div>
                                 </div>
                             </div>
@@ -195,7 +212,7 @@
                         </div>
                         <div class="card-body">
                             <h6>Current Period</h6>
-                            <div class="row">
+                            <div class="row align-inputs-bottom">
                                 <div class="col-md-3">
                                     <div class="mb-3">
                                         <label class="form-label">Impressions</label>
@@ -217,11 +234,11 @@
                                 <div class="col-md-3">
                                     <div class="mb-3">
                                         <label class="form-label">Total Downloads</label>
-                                        <InputNumber TValue="double?" @bind-Value="config.IOSMetrics.TotalDownloads" class="form-control" />
+                                        <InputNumber TValue="double?" @bind-Value="config.IOSMetrics.TotalDownloads" @bind-Value:after="OnDownloadSourceChanged" class="form-control" />
                                     </div>
                                 </div>
                             </div>
-                            <div class="row">
+                            <div class="row align-inputs-bottom">
                                 <div class="col-md-3">
                                     <div class="mb-3">
                                         <label class="form-label">Daily Downloads</label>
@@ -251,7 +268,7 @@
                             @if (config.IncludeLastPeriodData)
                             {
                                 <h6 class="mt-4">Last Period (Optional - for comparison)</h6>
-                                <div class="row">
+                                <div class="row align-inputs-bottom">
                                     <div class="col-md-3">
                                         <div class="mb-3">
                                             <label class="form-label">Impressions (Last)</label>
@@ -277,7 +294,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="row">
+                                <div class="row align-inputs-bottom">
                                     <div class="col-md-3">
                                         <div class="mb-3">
                                             <label class="form-label">Daily Downloads (Last)</label>
@@ -304,118 +321,38 @@
                                     </div>
                                 </div>
 
-                                <h6 class="mt-4">% Change (Auto-Calculated)</h6>
-                                <div class="alert alert-info" role="alert">
-                                    <small>These values are automatically calculated based on current and last period values.</small>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-3">
-                                        <div class="mb-3">
-                                            <label class="form-label">Impressions Change</label>
-                                            <input type="text" class="form-control" value="@FormatChange(config.IOSMetrics.ImpressionsChange)" readonly />
-                                        </div>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <div class="mb-3">
-                                            <label class="form-label">Product Page Views Change</label>
-                                            <input type="text" class="form-control" value="@FormatChange(config.IOSMetrics.ProductPageViewsChange)" readonly />
-                                        </div>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <div class="mb-3">
-                                            <label class="form-label">Conversion Rate Change</label>
-                                            <input type="text" class="form-control" value="@FormatChange(config.IOSMetrics.ConversionRateChange)" readonly />
-                                        </div>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <div class="mb-3">
-                                            <label class="form-label">Total Downloads Change</label>
-                                            <input type="text" class="form-control" value="@FormatChange(config.IOSMetrics.TotalDownloadsChange)" readonly />
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-3">
-                                        <div class="mb-3">
-                                            <label class="form-label">Daily Downloads Change</label>
-                                            <input type="text" class="form-control" value="@FormatChange(config.IOSMetrics.DailyDownloadsChange)" readonly />
-                                        </div>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <div class="mb-3">
-                                            <label class="form-label">Sessions per Device Change</label>
-                                            <input type="text" class="form-control" value="@FormatChange(config.IOSMetrics.SessionsPerDeviceChange)" readonly />
-                                        </div>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <div class="mb-3">
-                                            <label class="form-label">Crash Rate Change</label>
-                                            <input type="text" class="form-control" value="@FormatChange(config.IOSMetrics.CrashRatePerSessionChange)" readonly />
-                                        </div>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <div class="mb-3">
-                                            <label class="form-label">Total Crashes Change</label>
-                                            <input type="text" class="form-control" value="@FormatChange(config.IOSMetrics.TotalCrashesChange)" readonly />
-                                        </div>
-                                    </div>
-                                </div>
                             }
 
                             <h6 class="mt-4">Download Sources</h6>
-                            @for (int i = 0; i < config.IOSMetrics.DownloadSources.Count; i++)
+                            @if (HasDownloadSourceMismatch())
                             {
-                                var index = i;
-                                <div class="card mb-3 bg-light">
-                                    <div class="card-body">
-                                        <div class="row align-items-center">
-                                            <div class="@(config.IncludeLastPeriodData ? "col-md-2" : "col-md-4")">
-                                                <div class="mb-3">
-                                                    <label class="form-label">Source Name</label>
-                                                    <InputText @bind-Value="config.IOSMetrics.DownloadSources[index].Name" class="form-control" />
-                                                </div>
-                                            </div>
-                                            <div class="@(config.IncludeLastPeriodData ? "col-md-2" : "col-md-3")">
-                                                <div class="mb-3">
-                                                    <label class="form-label">Current Downloads</label>
-                                                    <InputNumber TValue="double?" @bind-Value="config.IOSMetrics.DownloadSources[index].CurrentDownloads" class="form-control" @onchange="() => OnDownloadSourceChanged()" />
-                                                </div>
-                                            </div>
-                                            <div class="@(config.IncludeLastPeriodData ? "col-md-2" : "col-md-3")">
-                                                <div class="mb-3">
-                                                    <label class="form-label">Current % (Auto-calculated)</label>
-                                                    <input type="text" class="form-control" value="@(config.IOSMetrics.DownloadSources[index].CurrentPercentage?.ToString("F2") ?? "-")" readonly />
-                                                </div>
-                                            </div>
-                                            @if (config.IncludeLastPeriodData)
-                                            {
-                                                <div class="col-md-2">
-                                                    <div class="mb-3">
-                                                        <label class="form-label">Last Downloads</label>
-                                                        <InputNumber TValue="double?" @bind-Value="config.IOSMetrics.DownloadSources[index].LastDownloads" class="form-control" @onchange="() => OnDownloadSourceChanged()" />
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-2">
-                                                    <div class="mb-3">
-                                                        <label class="form-label">Last % (Auto-calculated)</label>
-                                                        <input type="text" class="form-control" value="@(config.IOSMetrics.DownloadSources[index].LastPercentage?.ToString("F2") ?? "-")" readonly />
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-1">
-                                                    <div class="mb-3">
-                                                        <label class="form-label">% Change</label>
-                                                        <input type="text" class="form-control" value="@FormatChange(config.IOSMetrics.DownloadSources[index].DownloadsChange)" readonly />
-                                                    </div>
-                                                </div>
-                                            }
-                                            <div class="@(config.IncludeLastPeriodData ? "col-md-1" : "col-md-2")">
-                                                <button type="button" class="btn btn-danger btn-sm" @onclick="() => RemoveDownloadSource(index)">Remove</button>
-                                            </div>
-                                        </div>
+                                <div class="alert alert-warning d-flex align-items-center mb-3" role="alert">
+                                    <svg class="warning-icon me-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M12 2L1 21h22L12 2zm0 3.5L19.5 19h-15L12 5.5zM11 10v4h2v-4h-2zm0 5v2h2v-2h-2z"/>
+                                    </svg>
+                                    <div>
+                                        <strong>Warning:</strong> Download Sources total (@(GetDownloadSourcesTotal().ToString("N0"))) does not match Total Downloads (@((config.IOSMetrics.TotalDownloads ?? 0).ToString("N0")))
                                     </div>
                                 </div>
                             }
-                            <button type="button" class="btn btn-success" @onclick="AddDownloadSource">Add Download Source</button>
+                            <div class="form-check mb-3">
+                                <InputCheckbox @bind-Value="config.ShowPercentBySource" class="form-check-input" id="showPercentBySource" />
+                                <label class="form-check-label" for="showPercentBySource">
+                                    Show Percent by Source in Report
+                                </label>
+                            </div>
+                            <div class="row">
+                            @for (int i = 0; i < config.IOSMetrics.DownloadSources.Count; i++)
+                            {
+                                var index = i;
+                                <DownloadSourceCard
+                                    Source="@config.IOSMetrics.DownloadSources[index]"
+                                    IncludeLastPeriod="@config.IncludeLastPeriodData"
+                                    OnRemove="@(() => RemoveDownloadSource(index))"
+                                    OnValueChanged="@OnDownloadSourceChanged" />
+                            }
+                            </div>
+                            <button type="button" class="btn btn-success mt-2" @onclick="AddDownloadSource">Add Download Source</button>
                         </div>
                     </div>
                 }
@@ -429,7 +366,7 @@
                         </div>
                         <div class="card-body">
                             <h6>Current Period</h6>
-                            <div class="row">
+                            <div class="row align-inputs-bottom">
                                 <div class="col-md-4">
                                     <div class="mb-3">
                                         <label class="form-label">Total Installs</label>
@@ -453,7 +390,7 @@
                             @if (config.IncludeLastPeriodData)
                             {
                                 <h6 class="mt-4">Last Period (Optional - for comparison)</h6>
-                                <div class="row">
+                                <div class="row align-inputs-bottom">
                                     <div class="col-md-4">
                                         <div class="mb-3">
                                             <label class="form-label">Total Installs (Last)</label>
@@ -474,30 +411,6 @@
                                     </div>
                                 </div>
 
-                                <h6 class="mt-4">% Change (Auto-Calculated)</h6>
-                                <div class="alert alert-info" role="alert">
-                                    <small>These values are automatically calculated based on current and last period values.</small>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-4">
-                                        <div class="mb-3">
-                                            <label class="form-label">Total Installs Change</label>
-                                            <input type="text" class="form-control" value="@FormatChange(config.AndroidMetrics.TotalInstallsChange)" readonly />
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="mb-3">
-                                            <label class="form-label">Daily Downloads Change</label>
-                                            <input type="text" class="form-control" value="@FormatChange(config.AndroidMetrics.DailyDownloadsChange)" readonly />
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="mb-3">
-                                            <label class="form-label">Crash Rate Change</label>
-                                            <input type="text" class="form-control" value="@FormatChange(config.AndroidMetrics.CrashRatePerSessionChange)" readonly />
-                                        </div>
-                                    </div>
-                                </div>
                             }
                         </div>
                     </div>
@@ -512,7 +425,7 @@
                             <h5 class="mb-0">Technical Specifications</h5>
                         </div>
                         <div class="card-body">
-                            <div class="row">
+                            <div class="row align-inputs-bottom">
                                 <div class="col-md-4">
                                     <div class="mb-3">
                                         <label class="form-label">App Size</label>
@@ -559,6 +472,34 @@
     private bool isImporting = false;
     private string importMessage = string.Empty;
     private bool importSuccess = false;
+    private bool showImportDialog = false;
+    private MobileAppReportConfig? pendingImportConfig = null;
+    private bool isFabMenuOpen = false;
+
+    private void ToggleFabMenu()
+    {
+        isFabMenuOpen = !isFabMenuOpen;
+    }
+
+    private void ClearForm()
+    {
+        config = new MobileAppReportConfig();
+
+        // Re-initialize with default download sources
+        config.IOSMetrics.DownloadSources = new List<DownloadSource>
+        {
+            new() { Name = "App Store Search" },
+            new() { Name = "Web Referrer" },
+            new() { Name = "App Referrer" },
+            new() { Name = "App Store Browse" },
+            new() { Name = "Unavailable" }
+        };
+
+        importMessage = string.Empty;
+        importSuccess = false;
+        isFabMenuOpen = false;
+        StateHasChanged();
+    }
 
     protected override void OnInitialized()
     {
@@ -572,22 +513,13 @@
             new() { Name = "Unavailable" }
         };
 
-        // Set default date to today
-        var today = DateTime.Now;
-        config.ReportMonth = today.Month;
-        config.ReportDay = today.Day;
-        config.ReportYear = today.Year;
-
-        // Set default last report date to last month
-        var lastMonth = today.AddMonths(-1);
-        config.LastReportMonth = lastMonth.Month;
-        config.LastReportDay = lastMonth.Day;
-        config.LastReportYear = lastMonth.Year;
+        // No default for report dates - user should fill in or import
     }
 
     private void TriggerPdfUpload()
     {
         importMessage = string.Empty;
+        isFabMenuOpen = false;
         JSRuntime.InvokeVoidAsync("triggerFileUpload", "pdfFileInput");
     }
 
@@ -615,13 +547,10 @@
             var parser = new PdfReportParser();
             var importedConfig = parser.ParseMobileAppReport(buffer);
 
-            // Update the current config with imported values
-            config = importedConfig;
-
             // Ensure download sources are populated
-            if (!config.IOSMetrics.DownloadSources.Any())
+            if (!importedConfig.IOSMetrics.DownloadSources.Any())
             {
-                config.IOSMetrics.DownloadSources = new List<DownloadSource>
+                importedConfig.IOSMetrics.DownloadSources = new List<DownloadSource>
                 {
                     new() { Name = "App Store Search" },
                     new() { Name = "Web Referrer" },
@@ -631,8 +560,9 @@
                 };
             }
 
-            importMessage = "✓ Successfully imported last month's report! Previous period values have been auto-filled.";
-            importSuccess = true;
+            // Store the imported config and show the dialog
+            pendingImportConfig = importedConfig;
+            showImportDialog = true;
         }
         catch (Exception ex)
         {
@@ -648,6 +578,8 @@
 
     private async Task ExportConfig()
     {
+        isFabMenuOpen = false;
+
         try
         {
             var json = System.Text.Json.JsonSerializer.Serialize(config, new System.Text.Json.JsonSerializerOptions
@@ -675,6 +607,25 @@
         config.IOSMetrics.DownloadSources.RemoveAt(index);
     }
 
+    private bool HasDownloadSourceMismatch()
+    {
+        var downloadSourcesTotal = GetDownloadSourcesTotal();
+        var totalDownloads = config.IOSMetrics.TotalDownloads ?? 0;
+
+        // Show warning if either value exists and they don't match
+        if (downloadSourcesTotal > 0 || totalDownloads > 0)
+        {
+            return Math.Abs(downloadSourcesTotal - totalDownloads) > 0.01;
+        }
+
+        return false;
+    }
+
+    private double GetDownloadSourcesTotal()
+    {
+        return config.IOSMetrics.DownloadSources.Sum(s => s.CurrentDownloads ?? 0);
+    }
+
     private void OnDownloadSourceChanged()
     {
         // Recalculate all download source percentages whenever values change
@@ -690,6 +641,19 @@
 
         try
         {
+            // Validate iOS download sources vs total downloads
+            var downloadSourcesTotal = config.IOSMetrics.DownloadSources.Sum(s => s.CurrentDownloads ?? 0);
+            var totalDownloads = config.IOSMetrics.TotalDownloads ?? 0;
+
+            if (downloadSourcesTotal > 0 && totalDownloads > 0 && Math.Abs(downloadSourcesTotal - totalDownloads) > 0.01)
+            {
+                importMessage = $"⚠ Error: iOS Download Sources total ({downloadSourcesTotal:N0}) does not match Total Downloads ({totalDownloads:N0}). Please correct the values before generating the report.";
+                importSuccess = false;
+                isGenerating = false;
+                StateHasChanged();
+                return;
+            }
+
             // Auto-calculate download source percentages before generating
             config.IOSMetrics.CalculateDownloadSourcePercentages();
 
@@ -744,9 +708,9 @@
             var importedConfig = System.Text.Json.JsonSerializer.Deserialize<MobileAppReportConfig>(json);
             if (importedConfig != null)
             {
-                config = importedConfig;
-                importMessage = "✓ Successfully imported configuration from JSON!";
-                importSuccess = true;
+                // Store the imported config and show the dialog
+                pendingImportConfig = importedConfig;
+                showImportDialog = true;
             }
             else
             {
@@ -769,7 +733,86 @@
     private void TriggerJsonUpload()
     {
         importMessage = string.Empty;
+        isFabMenuOpen = false;
         JSRuntime.InvokeVoidAsync("triggerFileUpload", "jsonFileInput");
+    }
+
+    private void ImportToCurrentPeriod()
+    {
+        if (pendingImportConfig != null)
+        {
+            config = pendingImportConfig;
+            importMessage = "✓ Successfully imported data to current period fields!";
+            importSuccess = true;
+        }
+
+        showImportDialog = false;
+        pendingImportConfig = null;
+        StateHasChanged();
+    }
+
+    private void ImportToPreviousPeriod()
+    {
+        if (pendingImportConfig != null)
+        {
+            // Map current period values from imported config to last period fields in current config
+
+            // Import company name if current is empty, otherwise keep current
+            if (string.IsNullOrWhiteSpace(config.CompanyName))
+            {
+                config.CompanyName = pendingImportConfig.CompanyName;
+            }
+
+            // Import creator info from the imported report (they created the last report)
+            config.CreatedByName = pendingImportConfig.CreatedByName;
+            config.CreatedByTitle = pendingImportConfig.CreatedByTitle;
+
+            // General info - keep current config's current period, import to last period
+            config.LastReportMonth = pendingImportConfig.ReportMonth;
+            config.LastReportDay = pendingImportConfig.ReportDay;
+            config.LastReportYear = pendingImportConfig.ReportYear;
+
+            // iOS Metrics - map current to last
+            config.IOSMetrics.ImpressionsLast = pendingImportConfig.IOSMetrics.Impressions;
+            config.IOSMetrics.ProductPageViewsLast = pendingImportConfig.IOSMetrics.ProductPageViews;
+            config.IOSMetrics.ConversionRateLast = pendingImportConfig.IOSMetrics.ConversionRate;
+            config.IOSMetrics.TotalDownloadsLast = pendingImportConfig.IOSMetrics.TotalDownloads;
+            config.IOSMetrics.DailyDownloadsLast = pendingImportConfig.IOSMetrics.DailyDownloads;
+            config.IOSMetrics.SessionsPerDeviceLast = pendingImportConfig.IOSMetrics.SessionsPerDevice;
+            config.IOSMetrics.CrashRatePerSessionLast = pendingImportConfig.IOSMetrics.CrashRatePerSession;
+            config.IOSMetrics.TotalCrashesLast = pendingImportConfig.IOSMetrics.TotalCrashes;
+
+            // Download sources - map current to last
+            for (int i = 0; i < Math.Min(config.IOSMetrics.DownloadSources.Count, pendingImportConfig.IOSMetrics.DownloadSources.Count); i++)
+            {
+                config.IOSMetrics.DownloadSources[i].LastDownloads = pendingImportConfig.IOSMetrics.DownloadSources[i].CurrentDownloads;
+                config.IOSMetrics.DownloadSources[i].LastPercentage = pendingImportConfig.IOSMetrics.DownloadSources[i].CurrentPercentage;
+            }
+
+            // Android Metrics - map current to last
+            config.AndroidMetrics.TotalInstallsLast = pendingImportConfig.AndroidMetrics.TotalInstalls;
+            config.AndroidMetrics.DailyDownloadsLast = pendingImportConfig.AndroidMetrics.DailyDownloads;
+            config.AndroidMetrics.CrashRatePerSessionLast = pendingImportConfig.AndroidMetrics.CrashRatePerSession;
+
+            // Enable last period data if not already enabled
+            config.IncludeLastPeriodData = true;
+
+            importMessage = "✓ Successfully imported data to previous period fields!";
+            importSuccess = true;
+        }
+
+        showImportDialog = false;
+        pendingImportConfig = null;
+        StateHasChanged();
+    }
+
+    private void CancelImport()
+    {
+        showImportDialog = false;
+        pendingImportConfig = null;
+        importMessage = "Import cancelled.";
+        importSuccess = false;
+        StateHasChanged();
     }
 
     private string FormatChange(double? value)

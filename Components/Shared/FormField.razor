@@ -1,0 +1,63 @@
+@typeparam TValue
+
+<div class="@ContainerClass">
+    <div class="@WrapperClass">
+        <label class="form-label">@Label</label>
+        @if (IsTextInput)
+        {
+            <InputText @bind-Value="@TextValue" class="form-control" placeholder="@Placeholder" />
+        }
+        else if (IsNullableInt)
+        {
+            <InputNumber TValue="int?" @bind-Value="@NullableIntValue" class="form-control" placeholder="@Placeholder" />
+        }
+        else if (IsNullableDouble)
+        {
+            <InputNumber TValue="double?" @bind-Value="@NullableDoubleValue" class="form-control" placeholder="@Placeholder" @onchange="OnValueChanged" />
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string Label { get; set; } = string.Empty;
+
+    [Parameter]
+    public string Placeholder { get; set; } = string.Empty;
+
+    [Parameter]
+    public string ContainerClass { get; set; } = "col-md-3";
+
+    [Parameter]
+    public string WrapperClass { get; set; } = "mb-3";
+
+    [Parameter]
+    public string? TextValue { get; set; }
+
+    [Parameter]
+    public EventCallback<string?> TextValueChanged { get; set; }
+
+    [Parameter]
+    public int? NullableIntValue { get; set; }
+
+    [Parameter]
+    public EventCallback<int?> NullableIntValueChanged { get; set; }
+
+    [Parameter]
+    public double? NullableDoubleValue { get; set; }
+
+    [Parameter]
+    public EventCallback<double?> NullableDoubleValueChanged { get; set; }
+
+    [Parameter]
+    public EventCallback OnValueChanged { get; set; }
+
+    [Parameter]
+    public bool IsTextInput { get; set; }
+
+    [Parameter]
+    public bool IsNullableInt { get; set; }
+
+    [Parameter]
+    public bool IsNullableDouble { get; set; }
+}

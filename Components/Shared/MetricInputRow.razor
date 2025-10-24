@@ -1,0 +1,8 @@
+<div class="row align-inputs-bottom">
+    @ChildContent
+</div>
+
+@code {
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+}

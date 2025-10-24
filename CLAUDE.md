@@ -137,11 +137,32 @@ container.Table(table =>
 
 ### Styling System
 
-Custom CSS uses CSS variables for theming (`app.css`):
-- `--primary-color`: Main brand color (#2563eb)
-- `--card-shadow`: Standard elevation
-- Gradient backgrounds on card headers
-- Readonly form fields have gray background (`#f1f5f9`)
+**IMPORTANT: All UI components must be stylized for dark mode.**
+
+The application uses a modern dark theme with CSS variables defined in `app.css`:
+
+**Dark Mode Color Variables:**
+- `--bg-primary`: #0a0e1a (main background)
+- `--bg-secondary`: #111827 (secondary backgrounds)
+- `--bg-tertiary`: #1f2937 (cards, inputs)
+- `--bg-elevated`: #1e293b (modals, elevated elements)
+- `--text-primary`: #f1f5f9 (primary text)
+- `--text-secondary`: #94a3b8 (secondary text)
+- `--text-muted`: #64748b (muted text)
+
+**Accent Colors:**
+- `--accent-cyan`: #06b6d4
+- `--accent-purple`: #a855f7
+- `--accent-blue`: #3b82f6
+- `--gradient-cyan`: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)
+
+**UI Guidelines:**
+- All new components (modals, dialogs, cards) must use dark mode variables
+- Text must be readable with sufficient contrast (use `--text-primary` for main content)
+- Modals should have semi-transparent dark backdrops (`rgba(0, 0, 0, 0.75)`)
+- Form inputs should use `--bg-tertiary` background
+- Borders should use semi-transparent colors (e.g., `rgba(148, 163, 184, 0.2)`)
+- Never use white backgrounds or black text (use dark mode variables instead)
 
 Apply consistent styling to new components using existing variable names.
 

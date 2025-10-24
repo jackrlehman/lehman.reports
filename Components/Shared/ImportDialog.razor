@@ -1,0 +1,51 @@
+@if (IsVisible)
+{
+    <div class="modal-backdrop fade show"></div>
+    <div class="modal fade show" style="display: block;" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Import Data</h5>
+                    <button type="button" class="btn-close" @onclick="OnCancel">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-4">Where would you like to import the data?</p>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="import-option-card import-option-primary" @onclick="OnImportToPrevious">
+                                <div class="import-option-content">
+                                    <h6 class="import-option-title">Previous Period</h6>
+                                    <p class="import-option-description">Import data into the previous period fields (last month's data for comparison)</p>
+                                </div>
+                                <button type="button" class="btn btn-primary w-100">Import to Previous Period</button>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="import-option-card import-option-success" @onclick="OnImportToCurrent">
+                                <div class="import-option-content">
+                                    <h6 class="import-option-title">Current Period</h6>
+                                    <p class="import-option-description">Import data into the current period fields (this month's data)</p>
+                                </div>
+                                <button type="button" class="btn btn-success w-100">Import to Current Period</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public bool IsVisible { get; set; }
+
+    [Parameter]
+    public EventCallback OnImportToPrevious { get; set; }
+
+    [Parameter]
+    public EventCallback OnImportToCurrent { get; set; }
+
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
+}

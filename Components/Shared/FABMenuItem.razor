@@ -1,0 +1,42 @@
+<button type="button" class="fab-menu-item @CssClass" @onclick="OnClick" disabled="@IsDisabled" title="@Title">
+    @if (ChildContent != null)
+    {
+        @ChildContent
+    }
+    else if (!string.IsNullOrEmpty(IconContent))
+    {
+        <span class="fab-icon">@((MarkupString)IconContent)</span>
+        <span class="fab-label">@Label</span>
+    }
+    else
+    {
+        <span class="fab-icon">@Icon</span>
+        <span class="fab-label">@Label</span>
+    }
+</button>
+
+@code {
+    [Parameter]
+    public string Icon { get; set; } = string.Empty;
+
+    [Parameter]
+    public string IconContent { get; set; } = string.Empty;
+
+    [Parameter]
+    public string Label { get; set; } = string.Empty;
+
+    [Parameter]
+    public string Title { get; set; } = string.Empty;
+
+    [Parameter]
+    public string CssClass { get; set; } = string.Empty;
+
+    [Parameter]
+    public bool IsDisabled { get; set; }
+
+    [Parameter]
+    public EventCallback OnClick { get; set; }
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+}

@@ -6,13 +6,13 @@ public class MobileAppReportConfig
     public string Version { get; set; } = "1.02";
 
     // General Information
-    public string CompanyName { get; set; } = "Your Company";
+    public string CompanyName { get; set; } = string.Empty;
 
     [System.Text.Json.Serialization.JsonConverter(typeof(MonthJsonConverter))]
-    public int ReportMonth { get; set; }
+    public int? ReportMonth { get; set; }
 
-    public int ReportDay { get; set; }
-    public int ReportYear { get; set; }
+    public int? ReportDay { get; set; }
+    public int? ReportYear { get; set; }
     public string CreatedByName { get; set; } = string.Empty;
     public string CreatedByTitle { get; set; } = string.Empty;
 
@@ -20,18 +20,19 @@ public class MobileAppReportConfig
     public bool IncludeLastPeriodData { get; set; } = true;
 
     [System.Text.Json.Serialization.JsonConverter(typeof(MonthJsonConverter))]
-    public int LastReportMonth { get; set; }
+    public int? LastReportMonth { get; set; }
 
-    public int LastReportDay { get; set; }
-    public int LastReportYear { get; set; }
+    public int? LastReportDay { get; set; }
+    public int? LastReportYear { get; set; }
 
     // Helper method to format report date as MM/DD/YY
     public string GetFormattedReportDate()
     {
-        if (ReportMonth > 0 && ReportDay > 0 && ReportYear > 0)
+        if (ReportMonth.HasValue && ReportDay.HasValue && ReportYear.HasValue &&
+            ReportMonth.Value > 0 && ReportDay.Value > 0 && ReportYear.Value > 0)
         {
-            var year = ReportYear % 100; // Get last 2 digits
-            return $"{ReportMonth}/{ReportDay}/{year:00}";
+            var year = ReportYear.Value % 100; // Get last 2 digits
+            return $"{ReportMonth.Value}/{ReportDay.Value}/{year:00}";
         }
         return string.Empty;
     }
@@ -39,10 +40,11 @@ public class MobileAppReportConfig
     // Helper method to format last report date as MM/DD/YY
     public string GetFormattedLastReportDate()
     {
-        if (LastReportMonth > 0 && LastReportDay > 0 && LastReportYear > 0)
+        if (LastReportMonth.HasValue && LastReportDay.HasValue && LastReportYear.HasValue &&
+            LastReportMonth.Value > 0 && LastReportDay.Value > 0 && LastReportYear.Value > 0)
         {
-            var year = LastReportYear % 100; // Get last 2 digits
-            return $"{LastReportMonth}/{LastReportDay}/{year:00}";
+            var year = LastReportYear.Value % 100; // Get last 2 digits
+            return $"{LastReportMonth.Value}/{LastReportDay.Value}/{year:00}";
         }
         return string.Empty;
     }
@@ -59,6 +61,9 @@ public class MobileAppReportConfig
 
     // iOS Platform Metrics
     public IOSMetrics IOSMetrics { get; set; } = new();
+
+    // Download Sources Display Options
+    public bool ShowPercentBySource { get; set; } = true;
 
     // Android Platform Metrics
     public AndroidMetrics AndroidMetrics { get; set; } = new();
