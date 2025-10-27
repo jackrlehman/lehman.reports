@@ -1,0 +1,113 @@
+@using ReportBuilder.Services
+@inject ToastService ToastService
+@implements IDisposable
+@using Microsoft.AspNetCore.Components
+@using System.Linq
+
+<div class="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 12px; min-width: 320px; max-width: 420px; pointer-events: none;">
+    @for (int i = 0; i < _toasts.Length; i++)
+    {
+        var toast = _toasts[i];
+        if (toast != null)
+        {
+            var toastClass = GetToastClass(toast.Type);
+            var bgColor = GetBgColor(toast.Type);
+            var borderColor = GetBorderColor(toast.Type);
+            var iconColor = GetIconColor(toast.Type);
+            <div class="toast toast-@toastClass" role="alert" style="pointer-events: auto; background: @bgColor; border: 1px solid rgba(148, 163, 184, 0.2); border-left: 4px solid @borderColor; border-radius: 12px; padding: 16px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4); display: block;">
+                <div class="toast-content" style="display: flex; align-items: flex-start; gap: 12px;">
+                    <div class="toast-icon" style="flex-shrink: 0; width: 24px; height: 24px; font-size: 20px; line-height: 24px; display: block; color: @iconColor;">@GetIconText(toast.Type)</div>
+                    <div class="toast-message" style="flex: 1; color: #f1f5f9; font-size: 14px; line-height: 1.5; display: block; word-wrap: break-word;">@toast.Message</div>
+                    <button type="button" class="toast-close" @onclick="() => DismissToast(toast.Id)" aria-label="Close" style="background: none; border: none; color: #94a3b8; font-size: 24px; line-height: 1; cursor: pointer; padding: 0; width: 24px; height: 24px; display: block; flex-shrink: 0;">×</button>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+@code {
+    private ToastNotification[] _toasts = Array.Empty<ToastNotification>();
+
+    protected override void OnInitialized()
+    {
+        ToastService.OnChange += OnToastChanged;
+        UpdateToasts();
+    }
+
+    private void UpdateToasts()
+    {
+        _toasts = ToastService.Toasts.Where(t => t != null).ToArray();
+    }
+
+    private async void OnToastChanged()
+    {
+        await InvokeAsync(() =>
+        {
+            UpdateToasts();
+            StateHasChanged();
+        });
+    }
+
+    private void DismissToast(string toastId)
+    {
+        ToastService.Dismiss(toastId);
+    }
+
+    private string GetToastClass(ToastType type)
+    {
+        return type switch
+        {
+            ToastType.Success => "success",
+            ToastType.Error => "error",
+            ToastType.Warning => "warning",
+            ToastType.Info => "info",
+            _ => "info"
+        };
+    }
+
+    private string GetIconText(ToastType type)
+    {
+        return type switch
+        {
+            ToastType.Success => "✓",
+            ToastType.Error => "✕",
+            ToastType.Warning => "⚠",
+            ToastType.Info => "ℹ",
+            _ => "•"
+        };
+    }
+
+    private string GetBgColor(ToastType type)
+    {
+        return "#1e293b";
+    }
+
+    private string GetBorderColor(ToastType type)
+    {
+        return type switch
+        {
+            ToastType.Success => "#10b981",
+            ToastType.Error => "#ef4444",
+            ToastType.Warning => "#f59e0b",
+            ToastType.Info => "#3b82f6",
+            _ => "#3b82f6"
+        };
+    }
+
+    private string GetIconColor(ToastType type)
+    {
+        return type switch
+        {
+            ToastType.Success => "#10b981",
+            ToastType.Error => "#ef4444",
+            ToastType.Warning => "#f59e0b",
+            ToastType.Info => "#3b82f6",
+            _ => "#3b82f6"
+        };
+    }
+
+    public void Dispose()
+    {
+        ToastService.OnChange -= OnToastChanged;
+    }
+}

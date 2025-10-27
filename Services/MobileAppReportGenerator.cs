@@ -2,6 +2,7 @@ using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
 using ReportBuilder.Models;
+using System.Text.Json;
 
 namespace ReportBuilder.Services;
 
@@ -12,6 +13,13 @@ public class MobileAppReportGenerator : IReportGenerator<MobileAppReportConfig>
     public byte[] GeneratePdf(MobileAppReportConfig config)
     {
         QuestPDF.Settings.License = LicenseType.Community;
+
+        // Serialize config to JSON
+        var jsonOptions = new JsonSerializerOptions
+        {
+            WriteIndented = false // Compact to save space
+        };
+        var configJson = JsonSerializer.Serialize(config, jsonOptions);
 
         var document = Document.Create(container =>
         {
@@ -24,7 +32,18 @@ public class MobileAppReportGenerator : IReportGenerator<MobileAppReportConfig>
 
                 page.Header().ShowOnce().Element(c => ComposeHeader(c, config));
                 page.Content().Element(c => ComposeContent(c, config));
-                page.Footer().Element(c => ComposeFooter(c, config));
+                page.Footer().Element(c =>
+                {
+                    c.Column(column =>
+                    {
+                        column.Item().Element(container => ComposeFooter(container, config));
+
+                        // Add invisible JSON data marker at the end of the document
+                        column.Item().Text($"<!--REPORT_CONFIG_JSON:{configJson}-->")
+                            .FontSize(0.1f)
+                            .FontColor(Colors.White); // Invisible white text
+                    });
+                });
             });
         });
 

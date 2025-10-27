@@ -1,10 +1,14 @@
 using ReportBuilder.Components;
+using ReportBuilder.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+// Add toast notification service (scoped for each Blazor circuit)
+builder.Services.AddScoped<ToastService>();
 
 var app = builder.Build();
 

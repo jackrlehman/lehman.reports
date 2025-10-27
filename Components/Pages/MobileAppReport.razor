@@ -3,12 +3,12 @@
 @using ReportBuilder.Models
 @using ReportBuilder.Services
 @inject IJSRuntime JSRuntime
+@inject ToastService ToastService
 
 <PageTitle>Mobile App Store Performance Report</PageTitle>
 
 <!-- Hidden File Inputs -->
 <InputFile id="pdfFileInput" OnChange="HandlePdfImport" accept=".pdf" style="display: none;" />
-<InputFile id="jsonFileInput" OnChange="ImportJson" accept=".json" style="display: none;" />
 
 <!-- Floating Action Button Menu -->
 <div class="fab-container">
@@ -18,12 +18,6 @@
     }
 
     <div class="fab-menu @(isFabMenuOpen ? "open" : "")">
-        <FABMenuItem Icon="✕" Label="Clear Form" Title="Clear Form" CssClass="fab-menu-clear" OnClick="@ClearForm" />
-
-        <FABMenuItem Icon="⬆" Label="Export JSON" Title="Export JSON" CssClass="fab-menu-export" OnClick="@ExportConfig" />
-
-        <FABMenuItem Icon="⬇" Label="Import JSON" Title="Import JSON" CssClass="fab-menu-import-json" OnClick="@TriggerJsonUpload" IsDisabled="@isImporting" />
-
         <FABMenuItem CssClass="fab-menu-import-pdf" OnClick="@TriggerPdfUpload" IsDisabled="@isImporting" Title="Import PDF">
             @if (isImporting)
             {
@@ -41,6 +35,8 @@
                 <span class="fab-label">Import PDF</span>
             }
         </FABMenuItem>
+
+        <FABMenuItem Icon="✕" Label="Clear Form" Title="Clear Form" CssClass="fab-menu-clear" OnClick="@ClearForm" />
     </div>
 
     <button type="button" class="fab-button @(isFabMenuOpen ? "open" : "")" @onclick="ToggleFabMenu">
@@ -53,8 +49,6 @@
         <h1 style="margin-bottom: 0.5rem;">Mobile App Store Performance Report</h1>
         <p style="color: var(--text-secondary); font-size: 1rem;">Generate comprehensive PDF reports with customizable metrics and comparisons</p>
     </div>
-
-    <AlertMessage Message="@importMessage" IsSuccess="@importSuccess" />
 
     <ImportDialog
         IsVisible="@showImportDialog"
@@ -470,8 +464,6 @@
     private MobileAppReportConfig config = new();
     private bool isGenerating = false;
     private bool isImporting = false;
-    private string importMessage = string.Empty;
-    private bool importSuccess = false;
     private bool showImportDialog = false;
     private MobileAppReportConfig? pendingImportConfig = null;
     private bool isFabMenuOpen = false;
@@ -495,8 +487,6 @@
             new() { Name = "Unavailable" }
         };
 
-        importMessage = string.Empty;
-        importSuccess = false;
         isFabMenuOpen = false;
         StateHasChanged();
     }
@@ -518,7 +508,6 @@
 
     private void TriggerPdfUpload()
     {
-        importMessage = string.Empty;
         isFabMenuOpen = false;
         JSRuntime.InvokeVoidAsync("triggerFileUpload", "pdfFileInput");
     }
@@ -526,7 +515,6 @@
     private async Task HandlePdfImport(InputFileChangeEventArgs e)
     {
         isImporting = true;
-        importMessage = string.Empty;
         StateHasChanged();
 
         try
@@ -534,14 +522,15 @@
             var file = e.File;
             if (file == null || !file.Name.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
             {
-                importMessage = "Please select a valid PDF file.";
-                importSuccess = false;
+                ToastService.ShowError("Please select a valid PDF file.");
                 return;
             }
 
             // Read the PDF file
-            var buffer = new byte[file.Size];
-            await file.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024).ReadAsync(buffer);
+            using var stream = file.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024);
+            using var memoryStream = new MemoryStream();
+            await stream.CopyToAsync(memoryStream);
+            var buffer = memoryStream.ToArray();
 
             // Parse the PDF
             var parser = new PdfReportParser();
@@ -566,34 +555,12 @@
         }
         catch (Exception ex)
         {
-            importMessage = $"Error importing PDF: {ex.Message}";
-            importSuccess = false;
+            ToastService.ShowError($"Error importing PDF: {ex.Message}");
         }
         finally
         {
             isImporting = false;
             StateHasChanged();
-        }
-    }
-
-    private async Task ExportConfig()
-    {
-        isFabMenuOpen = false;
-
-        try
-        {
-            var json = System.Text.Json.JsonSerializer.Serialize(config, new System.Text.Json.JsonSerializerOptions
-            {
-                WriteIndented = true
-            });
-
-            var fileName = $"{config.CompanyName}_Report_Config_{DateTime.Now:yyyyMMdd}.json";
-            await JSRuntime.InvokeVoidAsync("downloadJson", fileName, json);
-        }
-        catch (Exception ex)
-        {
-            importMessage = $"Error exporting configuration: {ex.Message}";
-            importSuccess = false;
         }
     }
 
@@ -636,7 +603,6 @@
     private async Task GenerateReport()
     {
         isGenerating = true;
-        importMessage = string.Empty;
         StateHasChanged();
 
         try
@@ -647,8 +613,7 @@
 
             if (downloadSourcesTotal > 0 && totalDownloads > 0 && Math.Abs(downloadSourcesTotal - totalDownloads) > 0.01)
             {
-                importMessage = $"⚠ Error: iOS Download Sources total ({downloadSourcesTotal:N0}) does not match Total Downloads ({totalDownloads:N0}). Please correct the values before generating the report.";
-                importSuccess = false;
+                ToastService.ShowError($"iOS Download Sources total ({downloadSourcesTotal:N0}) does not match Total Downloads ({totalDownloads:N0}). Please correct the values before generating the report.");
                 isGenerating = false;
                 StateHasChanged();
                 return;
@@ -667,13 +632,11 @@
             var fileName = $"{config.CompanyName}_Mobile_App_Report_{config.ReportMonth}_{config.ReportDay}_{config.ReportYear}.pdf";
             await JSRuntime.InvokeVoidAsync("downloadFile", fileName, Convert.ToBase64String(pdfBytes));
 
-            importMessage = "✓ PDF report generated successfully!";
-            importSuccess = true;
+            ToastService.ShowSuccess("PDF report generated successfully!");
         }
         catch (Exception ex)
         {
-            importMessage = $"Error generating report: {ex.Message}";
-            importSuccess = false;
+            ToastService.ShowError($"Error generating report: {ex.Message}");
             Console.WriteLine($"Error generating report: {ex.Message}\n{ex.StackTrace}");
         }
         finally
@@ -683,67 +646,12 @@
         }
     }
 
-    private async Task ImportJson(InputFileChangeEventArgs e)
-    {
-        isImporting = true;
-        importMessage = string.Empty;
-        StateHasChanged();
-
-        try
-        {
-            var file = e.File;
-            if (file == null || !file.Name.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
-            {
-                importMessage = "Please select a valid JSON file.";
-                importSuccess = false;
-                return;
-            }
-
-            // Read the JSON file
-            using var stream = file.OpenReadStream(maxAllowedSize: 1 * 1024 * 1024); // 1MB max
-            using var reader = new System.IO.StreamReader(stream);
-            var json = await reader.ReadToEndAsync();
-
-            // Deserialize
-            var importedConfig = System.Text.Json.JsonSerializer.Deserialize<MobileAppReportConfig>(json);
-            if (importedConfig != null)
-            {
-                // Store the imported config and show the dialog
-                pendingImportConfig = importedConfig;
-                showImportDialog = true;
-            }
-            else
-            {
-                importMessage = "Error: Failed to parse JSON file.";
-                importSuccess = false;
-            }
-        }
-        catch (Exception ex)
-        {
-            importMessage = $"Error importing JSON: {ex.Message}";
-            importSuccess = false;
-        }
-        finally
-        {
-            isImporting = false;
-            StateHasChanged();
-        }
-    }
-
-    private void TriggerJsonUpload()
-    {
-        importMessage = string.Empty;
-        isFabMenuOpen = false;
-        JSRuntime.InvokeVoidAsync("triggerFileUpload", "jsonFileInput");
-    }
-
     private void ImportToCurrentPeriod()
     {
         if (pendingImportConfig != null)
         {
             config = pendingImportConfig;
-            importMessage = "✓ Successfully imported data to current period fields!";
-            importSuccess = true;
+            ToastService.ShowSuccess("Successfully imported data to current period fields!");
         }
 
         showImportDialog = false;
@@ -794,11 +702,20 @@
             config.AndroidMetrics.DailyDownloadsLast = pendingImportConfig.AndroidMetrics.DailyDownloads;
             config.AndroidMetrics.CrashRatePerSessionLast = pendingImportConfig.AndroidMetrics.CrashRatePerSession;
 
+            // Platform Comparison - map current to last
+            config.PlatformComparison.IOSTotalDownloadsLast = pendingImportConfig.PlatformComparison.IOSTotalDownloads;
+            config.PlatformComparison.AndroidTotalDownloadsLast = pendingImportConfig.PlatformComparison.AndroidTotalDownloads;
+            config.PlatformComparison.IOSUserPercentLast = pendingImportConfig.PlatformComparison.IOSUserPercent;
+            config.PlatformComparison.AndroidUserPercentLast = pendingImportConfig.PlatformComparison.AndroidUserPercent;
+            config.PlatformComparison.IOSDailyDownloadsLast = pendingImportConfig.PlatformComparison.IOSDailyDownloads;
+            config.PlatformComparison.AndroidDailyDownloadsLast = pendingImportConfig.PlatformComparison.AndroidDailyDownloads;
+            config.PlatformComparison.IOSCrashRateLast = pendingImportConfig.PlatformComparison.IOSCrashRate;
+            config.PlatformComparison.AndroidCrashRateLast = pendingImportConfig.PlatformComparison.AndroidCrashRate;
+
             // Enable last period data if not already enabled
             config.IncludeLastPeriodData = true;
 
-            importMessage = "✓ Successfully imported data to previous period fields!";
-            importSuccess = true;
+            ToastService.ShowSuccess("Successfully imported data to previous period fields!");
         }
 
         showImportDialog = false;
@@ -810,8 +727,7 @@
     {
         showImportDialog = false;
         pendingImportConfig = null;
-        importMessage = "Import cancelled.";
-        importSuccess = false;
+        ToastService.ShowInfo("Import cancelled.");
         StateHasChanged();
     }
 
