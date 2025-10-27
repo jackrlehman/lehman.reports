@@ -40,14 +40,25 @@
     </div>
 
     <button type="button" class="fab-button @(isFabMenuOpen ? "open" : "")" @onclick="ToggleFabMenu">
-        <span class="fab-button-icon">@(isFabMenuOpen ? "×" : "+")</span>
+        @if (isFabMenuOpen)
+        {
+            <span class="fab-button-icon-close">×</span>
+        }
+        else
+        {
+            <span class="fab-button-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="28" height="28">
+                    <path d="M13 2L3 14h8l-1 8 10-12h-8l1-8z"/>
+                </svg>
+            </span>
+        }
     </button>
 </div>
 
 <div style="max-width: 1600px; margin: 0 auto;">
-    <div style="margin-bottom: 2rem;">
-        <h1 style="margin-bottom: 0.5rem;">Mobile App Store Performance Report</h1>
-        <p style="color: var(--text-secondary); font-size: 1rem;">Generate comprehensive PDF reports with customizable metrics and comparisons</p>
+    <div style="margin-bottom: 1.25rem;">
+        <h1 style="margin-bottom: 0.375rem;">Mobile App Store Performance Report</h1>
+        <p style="color: var(--text-secondary); font-size: 0.9375rem; margin-bottom: 0;">Generate comprehensive PDF reports with customizable metrics and comparisons</p>
     </div>
 
     <ImportDialog
@@ -147,35 +158,51 @@
                         <h5 class="mb-0">Report Sections</h5>
                     </div>
                     <div class="card-body">
-                        <div class="form-check mb-2">
-                            <InputCheckbox @bind-Value="config.IncludeExecutiveSummary" class="form-check-input" id="execSummary" />
-                            <label class="form-check-label" for="execSummary">
-                                Include Executive Summary
-                            </label>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-check mb-2">
+                                    <InputCheckbox @bind-Value="config.IncludeExecutiveSummary" class="form-check-input" id="execSummary" />
+                                    <label class="form-check-label" for="execSummary">
+                                        Include Executive Summary
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check mb-2">
+                                    <InputCheckbox @bind-Value="config.IncludeIOSSection" class="form-check-input" id="iosSection" />
+                                    <label class="form-check-label" for="iosSection">
+                                        Include iOS Platform Performance
+                                    </label>
+                                </div>
+                            </div>
                         </div>
-                        <div class="form-check mb-2">
-                            <InputCheckbox @bind-Value="config.IncludeIOSSection" class="form-check-input" id="iosSection" />
-                            <label class="form-check-label" for="iosSection">
-                                Include iOS Platform Performance
-                            </label>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-check mb-2">
+                                    <InputCheckbox @bind-Value="config.IncludeAndroidSection" class="form-check-input" id="androidSection" />
+                                    <label class="form-check-label" for="androidSection">
+                                        Include Android Platform Performance
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check mb-2">
+                                    <InputCheckbox @bind-Value="config.IncludePlatformComparison" class="form-check-input" id="platformComp" />
+                                    <label class="form-check-label" for="platformComp">
+                                        Include Platform Comparison
+                                    </label>
+                                </div>
+                            </div>
                         </div>
-                        <div class="form-check mb-2">
-                            <InputCheckbox @bind-Value="config.IncludeAndroidSection" class="form-check-input" id="androidSection" />
-                            <label class="form-check-label" for="androidSection">
-                                Include Android Platform Performance
-                            </label>
-                        </div>
-                        <div class="form-check mb-2">
-                            <InputCheckbox @bind-Value="config.IncludePlatformComparison" class="form-check-input" id="platformComp" />
-                            <label class="form-check-label" for="platformComp">
-                                Include Platform Comparison
-                            </label>
-                        </div>
-                        <div class="form-check mb-2">
-                            <InputCheckbox @bind-Value="config.IncludeTechnicalSpecifications" class="form-check-input" id="techSpecs" />
-                            <label class="form-check-label" for="techSpecs">
-                                Include Technical Specifications
-                            </label>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-check mb-2">
+                                    <InputCheckbox @bind-Value="config.IncludeTechnicalSpecifications" class="form-check-input" id="techSpecs" />
+                                    <label class="form-check-label" for="techSpecs">
+                                        Include Technical Specifications
+                                    </label>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -442,7 +469,7 @@
                 }
 
                 <!-- Generate Button -->
-                <div style="text-align: center; margin: 3rem 0;">
+                <div style="text-align: center; margin: 2rem 0 1.5rem 0;">
                     <button type="submit" class="btn btn-primary btn-lg" disabled="@isGenerating">
                         @if (isGenerating)
                         {

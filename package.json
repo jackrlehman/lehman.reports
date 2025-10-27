@@ -1,0 +1,20 @@
+{
+  "name": "lehman.reports",
+  "version": "1.0.0",
+  "description": "A professional C# Blazor application for generating customizable PDF reports. This application is designed to support multiple report types, with the initial implementation featuring a comprehensive Mobile App Store Performance Report.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jackrlehman/lehman.reports.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jackrlehman/lehman.reports/issues"
+  },
+  "homepage": "https://github.com/jackrlehman/lehman.reports#readme"
+}
