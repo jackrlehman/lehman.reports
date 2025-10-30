@@ -169,7 +169,7 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="form-check mb-2">
-                                    <InputCheckbox @bind-Value="config.IncludeIOSSection" class="form-check-input" id="iosSection" />
+                                    <InputCheckbox @bind-Value="config.IncludeIOSSection" @bind-Value:after="OnIOSSectionChanged" class="form-check-input" id="iosSection" />
                                     <label class="form-check-label" for="iosSection">
                                         Include iOS Platform Performance
                                     </label>
@@ -179,7 +179,7 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-check mb-2">
-                                    <InputCheckbox @bind-Value="config.IncludeAndroidSection" class="form-check-input" id="androidSection" />
+                                    <InputCheckbox @bind-Value="config.IncludeAndroidSection" @bind-Value:after="OnAndroidSectionChanged" class="form-check-input" id="androidSection" />
                                     <label class="form-check-label" for="androidSection">
                                         Include Android Platform Performance
                                     </label>
@@ -187,10 +187,16 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="form-check mb-2">
-                                    <InputCheckbox @bind-Value="config.IncludePlatformComparison" class="form-check-input" id="platformComp" />
-                                    <label class="form-check-label" for="platformComp">
+                                    <InputCheckbox @bind-Value="config.IncludePlatformComparison" class="form-check-input" id="platformComp" disabled="@(!config.IncludeIOSSection || !config.IncludeAndroidSection)" />
+                                    <label class="form-check-label" for="platformComp" style="@(!config.IncludeIOSSection || !config.IncludeAndroidSection ? "opacity: 0.5;" : "")">
                                         Include Platform Comparison
                                     </label>
+                                    @if (!config.IncludeIOSSection || !config.IncludeAndroidSection)
+                                    {
+                                        <small class="form-text" style="color: var(--text-muted); display: block; margin-top: 0.25rem;">
+                                            Requires both iOS and Android sections
+                                        </small>
+                                    }
                                 </div>
                             </div>
                         </div>
@@ -539,6 +545,24 @@
         JSRuntime.InvokeVoidAsync("triggerFileUpload", "pdfFileInput");
     }
 
+    private void OnIOSSectionChanged()
+    {
+        // Auto-uncheck Platform Comparison if iOS is unchecked and it was previously checked
+        if (!config.IncludeIOSSection && config.IncludePlatformComparison)
+        {
+            config.IncludePlatformComparison = false;
+        }
+    }
+
+    private void OnAndroidSectionChanged()
+    {
+        // Auto-uncheck Platform Comparison if Android is unchecked and it was previously checked
+        if (!config.IncludeAndroidSection && config.IncludePlatformComparison)
+        {
+            config.IncludePlatformComparison = false;
+        }
+    }
+
     private async Task HandlePdfImport(InputFileChangeEventArgs e)
     {
         isImporting = true;
@@ -634,7 +658,114 @@
 
         try
         {
-            // Validate iOS download sources vs total downloads
+            // ====== VALIDATION SECTION ======
+
+            // 1. Always Required Fields (General Information)
+            if (string.IsNullOrWhiteSpace(config.CreatedByName))
+            {
+                ToastService.ShowError("Please provide Created By Name");
+                isGenerating = false;
+                StateHasChanged();
+                return;
+            }
+
+            if (!config.ReportMonth.HasValue || config.ReportMonth.Value < 1 || config.ReportMonth.Value > 12)
+            {
+                ToastService.ShowError("Please provide a valid Report Month (1-12)");
+                isGenerating = false;
+                StateHasChanged();
+                return;
+            }
+
+            if (!config.ReportDay.HasValue || config.ReportDay.Value < 1 || config.ReportDay.Value > 31)
+            {
+                ToastService.ShowError("Please provide a valid Report Day (1-31)");
+                isGenerating = false;
+                StateHasChanged();
+                return;
+            }
+
+            if (!config.ReportYear.HasValue || config.ReportYear.Value < 2000)
+            {
+                ToastService.ShowError("Please provide a valid Report Year (must be 2000 or later)");
+                isGenerating = false;
+                StateHasChanged();
+                return;
+            }
+
+            // 2. Conditional Required Fields - Executive Summary
+            if (config.IncludeExecutiveSummary && string.IsNullOrWhiteSpace(config.ExecutiveSummary))
+            {
+                ToastService.ShowError("Executive Summary is selected but the summary text is empty. Please provide a summary or uncheck the section.");
+                isGenerating = false;
+                StateHasChanged();
+                return;
+            }
+
+            // 3. Conditional Required Fields - iOS Section
+            if (config.IncludeIOSSection)
+            {
+                if (!config.IOSMetrics.Impressions.HasValue ||
+                    !config.IOSMetrics.ProductPageViews.HasValue ||
+                    !config.IOSMetrics.ConversionRate.HasValue ||
+                    !config.IOSMetrics.TotalDownloads.HasValue ||
+                    !config.IOSMetrics.DailyDownloads.HasValue ||
+                    !config.IOSMetrics.SessionsPerDevice.HasValue ||
+                    !config.IOSMetrics.CrashRatePerSession.HasValue ||
+                    !config.IOSMetrics.TotalCrashes.HasValue)
+                {
+                    ToastService.ShowError("iOS section is selected but some required fields are missing. Please fill in all iOS metrics or uncheck the section.");
+                    isGenerating = false;
+                    StateHasChanged();
+                    return;
+                }
+
+                // Validate download sources have names
+                if (config.IOSMetrics.DownloadSources.Any(s => string.IsNullOrWhiteSpace(s.Name)))
+                {
+                    ToastService.ShowError("iOS section: All download sources must have a name. Please provide names or remove empty sources.");
+                    isGenerating = false;
+                    StateHasChanged();
+                    return;
+                }
+            }
+
+            // 4. Conditional Required Fields - Android Section
+            if (config.IncludeAndroidSection)
+            {
+                if (!config.AndroidMetrics.TotalInstalls.HasValue ||
+                    !config.AndroidMetrics.DailyDownloads.HasValue ||
+                    !config.AndroidMetrics.CrashRatePerSession.HasValue)
+                {
+                    ToastService.ShowError("Android section is selected but all required fields must be filled. Please fill in all Android metrics or uncheck the section.");
+                    isGenerating = false;
+                    StateHasChanged();
+                    return;
+                }
+            }
+
+            // 5. Conditional Required Fields - Technical Specifications
+            if (config.IncludeTechnicalSpecifications)
+            {
+                if (!config.AppSize.HasValue || config.AppSize.Value <= 0)
+                {
+                    ToastService.ShowError("Technical Specifications section is selected but App Size is missing or invalid. Please provide a valid app size or uncheck the section.");
+                    isGenerating = false;
+                    StateHasChanged();
+                    return;
+                }
+            }
+
+            // 6. Platform Comparison Logic Check
+            if (config.IncludePlatformComparison && (!config.IncludeIOSSection || !config.IncludeAndroidSection))
+            {
+                ToastService.ShowError("Platform Comparison requires both iOS and Android sections to be selected.");
+                isGenerating = false;
+                StateHasChanged();
+                return;
+            }
+
+            // 7. Existing validation: iOS download sources vs total downloads
             var downloadSourcesTotal = config.IOSMetrics.DownloadSources.Sum(s => s.CurrentDownloads ?? 0);
             var totalDownloads = config.IOSMetrics.TotalDownloads ?? 0;
 
@@ -645,6 +776,8 @@
                 StateHasChanged();
                 return;
             }
+
+            // ====== END VALIDATION SECTION ======
 
             // Auto-calculate download source percentages before generating
             config.IOSMetrics.CalculateDownloadSourcePercentages();
