@@ -13,7 +13,7 @@
                 <div class="@(IncludeLastPeriod ? "col-md-3" : "col-md-5")">
                     <div>
                         <label class="form-label">Current</label>
-                        <InputNumber TValue="double?" @bind-Value="Source.CurrentDownloads" @bind-Value:after="HandleValueChanged" class="form-control" />
+                        <InputNumber TValue="double?" @bind-Value="Source.CurrentDownloads" @bind-Value:event="oninput" @bind-Value:after="HandleValueChanged" class="form-control" />
                     </div>
                 </div>
                 @if (IncludeLastPeriod)
@@ -21,7 +21,7 @@
                     <div class="col-md-3">
                         <div>
                             <label class="form-label">Last</label>
-                            <InputNumber TValue="double?" @bind-Value="Source.LastDownloads" @bind-Value:after="HandleValueChanged" class="form-control" />
+                            <InputNumber TValue="double?" @bind-Value="Source.LastDownloads" @bind-Value:event="oninput" @bind-Value:after="HandleValueChanged" class="form-control" />
                         </div>
                     </div>
                 }
