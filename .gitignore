@@ -6,3 +6,17 @@ bin/
 obj/
 
 temp/
+
+# Tauri
+src-tauri/target/
+src-tauri/node_modules/
+dist/
+
+# Node
+node_modules/
+
+# IDE
+.idea/
+*.swp
+*.swo
+

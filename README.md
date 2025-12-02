@@ -37,16 +37,27 @@ A comprehensive report for tracking mobile app performance across iOS and Androi
 
 ## Getting Started
 
-### Prerequisites
+### For End Users (No Installation Needed)
+
+1. Download `ReportBuilder.zip` from the releases
+2. Extract the ZIP file to any folder
+3. Double-click `ReportBuilder.bat`
+4. Your browser opens automatically to the application
+
+See [DISTRIBUTION_READY.md](DISTRIBUTION_READY.md) for detailed user instructions.
+
+### For Developers
+
+#### Prerequisites
 
 - .NET 9.0 SDK or later
 - A modern web browser
 
-### Running the Application
+#### Running the Application
 
 1. Navigate to the project directory:
    ```bash
-   cd F:\Git\lehmidt\lehmidt.report.builder
+   cd C:\git\lehman.reports
    ```
 
 2. Build the project:
@@ -59,7 +70,7 @@ A comprehensive report for tracking mobile app performance across iOS and Androi
    dotnet run
    ```
 
-4. Open your browser and navigate to the URL shown in the console (typically `https://localhost:5001` or `http://localhost:5000`)
+4. Open your browser and navigate to `https://localhost:5001` or `http://localhost:5000`
 
 ### Using the Mobile App Report
 

@@ -1,7 +1,10 @@
-using ReportBuilder.Components;
 using ReportBuilder.Services;
+using ReportBuilder.Components;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure to listen on localhost:5000 for Tauri
+builder.WebHost.UseUrls("http://localhost:5000");
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
@@ -19,7 +22,12 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+// Skip HTTPS redirection when running in Tauri
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
+
 app.UseStaticFiles();
 app.UseAntiforgery();
 
