@@ -56,6 +56,7 @@ public class MobileAppReportConfig
     public bool IncludePlatformComparison { get; set; } = true;
     public bool IncludeTechnicalSpecifications { get; set; } = true;
     public bool IncludeHighVarianceMetrics { get; set; } = false;
+    public double HighVarianceThreshold { get; set; } = 85.0;
 
     // Executive Summary
     public string ExecutiveSummary { get; set; } = string.Empty;

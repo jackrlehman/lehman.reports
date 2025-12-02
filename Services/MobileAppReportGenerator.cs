@@ -126,17 +126,17 @@ public class MobileAppReportGenerator : IReportGenerator<MobileAppReportConfig>
                 column.Item().PaddingTop(20);
             }
 
-            // Technical Specifications
-            if (config.IncludeTechnicalSpecifications)
-            {
-                column.Item().Element(c => ComposeTechnicalSpecifications(c, config));
-                column.Item().PaddingTop(20);
-            }
-
             // High Variance Metrics
             if (config.IncludeHighVarianceMetrics && config.IncludeLastPeriodData)
             {
                 column.Item().Element(c => ComposeHighVarianceMetrics(c, config));
+                column.Item().PaddingTop(20);
+            }
+
+            // Technical Specifications
+            if (config.IncludeTechnicalSpecifications)
+            {
+                column.Item().Element(c => ComposeTechnicalSpecifications(c, config));
             }
         });
     }
@@ -515,7 +515,7 @@ public class MobileAppReportGenerator : IReportGenerator<MobileAppReportConfig>
 
     private void ComposeHighVarianceMetrics(IContainer container, MobileAppReportConfig config)
     {
-        var varianceThreshold = 85.0;
+        var varianceThreshold = config.HighVarianceThreshold;
         var highVarianceItems = new List<(string metric, string section, double? change)>();
 
         // Collect iOS metrics with high variance
@@ -571,12 +571,12 @@ public class MobileAppReportGenerator : IReportGenerator<MobileAppReportConfig>
 
         container.Column(column =>
         {
-            column.Item().Text("High Variance Metrics (over ±85%)")
+            column.Item().Text($"High Variance Metrics (over ±{config.HighVarianceThreshold}%)")
                 .FontSize(16)
                 .Bold()
                 .FontColor(Colors.Blue.Medium);
 
-            column.Item().PaddingTop(8).Text("The following metrics experienced significant changes (greater than ±85%) from the previous period:")
+            column.Item().PaddingTop(8).Text($"The following metrics experienced significant changes (greater than ±{config.HighVarianceThreshold}%) from the previous period:")
                 .FontSize(10)
                 .Italic();
 
