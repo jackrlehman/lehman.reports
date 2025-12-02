@@ -3,7 +3,7 @@ namespace ReportBuilder.Models;
 public class MobileAppReportConfig
 {
     // Version
-    public string Version { get; set; } = "1.02";
+    public string Version { get; set; } = "1.03";
 
     // General Information
     public string CompanyName { get; set; } = string.Empty;
@@ -55,6 +55,7 @@ public class MobileAppReportConfig
     public bool IncludeAndroidSection { get; set; } = true;
     public bool IncludePlatformComparison { get; set; } = true;
     public bool IncludeTechnicalSpecifications { get; set; } = true;
+    public bool IncludeHighVarianceMetrics { get; set; } = false;
 
     // Executive Summary
     public string ExecutiveSummary { get; set; } = string.Empty;
@@ -125,6 +126,9 @@ public class IOSMetrics
     public double? SessionsPerDevice { get; set; }
     public double? CrashRatePerSession { get; set; }
     public double? TotalCrashes { get; set; }
+    public double? DevicesActiveWithin30Days { get; set; }
+    public double? LifetimeDeletions { get; set; }
+    public double? LifetimeReDownloads { get; set; }
 
     // Key Metrics - Last Report (Optional)
     public double? ImpressionsLast { get; set; }
@@ -135,6 +139,9 @@ public class IOSMetrics
     public double? SessionsPerDeviceLast { get; set; }
     public double? CrashRatePerSessionLast { get; set; }
     public double? TotalCrashesLast { get; set; }
+    public double? DevicesActiveWithin30DaysLast { get; set; }
+    public double? LifetimeDeletionsLast { get; set; }
+    public double? LifetimeReDownloadsLast { get; set; }
 
     // Computed % Change (Read-only)
     public double? ImpressionsChange => CalculatePercentChange(Impressions, ImpressionsLast);
@@ -145,6 +152,9 @@ public class IOSMetrics
     public double? SessionsPerDeviceChange => CalculatePercentChange(SessionsPerDevice, SessionsPerDeviceLast);
     public double? CrashRatePerSessionChange => CalculatePercentChange(CrashRatePerSession, CrashRatePerSessionLast);
     public double? TotalCrashesChange => CalculatePercentChange(TotalCrashes, TotalCrashesLast);
+    public double? DevicesActiveWithin30DaysChange => CalculatePercentChange(DevicesActiveWithin30Days, DevicesActiveWithin30DaysLast);
+    public double? LifetimeDeletionsChange => CalculatePercentChange(LifetimeDeletions, LifetimeDeletionsLast);
+    public double? LifetimeReDownloadsChange => CalculatePercentChange(LifetimeReDownloads, LifetimeReDownloadsLast);
 
     // Download Sources
     public List<DownloadSource> DownloadSources { get; set; } = new();
@@ -281,3 +291,4 @@ public class PlatformComparisonMetrics
         return Math.Round(((current.Value - last.Value) / last.Value) * 100, 2);
     }
 }
+

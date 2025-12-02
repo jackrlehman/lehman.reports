@@ -130,6 +130,13 @@ public class MobileAppReportGenerator : IReportGenerator<MobileAppReportConfig>
             if (config.IncludeTechnicalSpecifications)
             {
                 column.Item().Element(c => ComposeTechnicalSpecifications(c, config));
+                column.Item().PaddingTop(20);
+            }
+
+            // High Variance Metrics
+            if (config.IncludeHighVarianceMetrics && config.IncludeLastPeriodData)
+            {
+                column.Item().Element(c => ComposeHighVarianceMetrics(c, config));
             }
         });
     }
@@ -213,12 +220,14 @@ public class MobileAppReportGenerator : IReportGenerator<MobileAppReportConfig>
                 // Rows
                 AddTableRow(table, "Impressions", config.IOSMetrics.Impressions, config.IOSMetrics.ImpressionsLast, config.IOSMetrics.ImpressionsChange, config.IncludeLastPeriodData, 0);
                 AddTableRow(table, "Product Page Views", config.IOSMetrics.ProductPageViews, config.IOSMetrics.ProductPageViewsLast, config.IOSMetrics.ProductPageViewsChange, config.IncludeLastPeriodData, 1);
-                AddTableRow(table, "Conversion Rate", config.IOSMetrics.ConversionRate, config.IOSMetrics.ConversionRateLast, config.IOSMetrics.ConversionRateChange, config.IncludeLastPeriodData, 2);
+                AddTableRow(table, "Conversion Rate", config.IOSMetrics.ConversionRate, config.IOSMetrics.ConversionRateLast, config.IOSMetrics.ConversionRateChange, config.IncludeLastPeriodData, 2, true);
                 AddTableRow(table, "Total Downloads", config.IOSMetrics.TotalDownloads, config.IOSMetrics.TotalDownloadsLast, config.IOSMetrics.TotalDownloadsChange, config.IncludeLastPeriodData, 3);
                 AddTableRow(table, "Daily Downloads", config.IOSMetrics.DailyDownloads, config.IOSMetrics.DailyDownloadsLast, config.IOSMetrics.DailyDownloadsChange, config.IncludeLastPeriodData, 4);
                 AddTableRow(table, "Sessions per Device", config.IOSMetrics.SessionsPerDevice, config.IOSMetrics.SessionsPerDeviceLast, config.IOSMetrics.SessionsPerDeviceChange, config.IncludeLastPeriodData, 5);
-                AddTableRow(table, "Crash Rate per Session", config.IOSMetrics.CrashRatePerSession, config.IOSMetrics.CrashRatePerSessionLast, config.IOSMetrics.CrashRatePerSessionChange, config.IncludeLastPeriodData, 6, true);
-                AddTableRow(table, "Total Crashes", config.IOSMetrics.TotalCrashes, config.IOSMetrics.TotalCrashesLast, config.IOSMetrics.TotalCrashesChange, config.IncludeLastPeriodData, 7);
+                AddTableRow(table, "Total Crashes", config.IOSMetrics.TotalCrashes, config.IOSMetrics.TotalCrashesLast, config.IOSMetrics.TotalCrashesChange, config.IncludeLastPeriodData, 6);
+                AddTableRow(table, "Devices Active within Past 30 Days", config.IOSMetrics.DevicesActiveWithin30Days, config.IOSMetrics.DevicesActiveWithin30DaysLast, config.IOSMetrics.DevicesActiveWithin30DaysChange, config.IncludeLastPeriodData, 7);
+                AddTableRow(table, "Lifetime Deletions", config.IOSMetrics.LifetimeDeletions, config.IOSMetrics.LifetimeDeletionsLast, config.IOSMetrics.LifetimeDeletionsChange, config.IncludeLastPeriodData, 8);
+                AddTableRow(table, "Lifetime Re-Downloads", config.IOSMetrics.LifetimeReDownloads, config.IOSMetrics.LifetimeReDownloadsLast, config.IOSMetrics.LifetimeReDownloadsChange, config.IncludeLastPeriodData, 9);
             }
             else
             {
@@ -242,8 +251,10 @@ public class MobileAppReportGenerator : IReportGenerator<MobileAppReportConfig>
                 AddTableRow(table, "Total Downloads", config.IOSMetrics.TotalDownloads, null, null, config.IncludeLastPeriodData, 3);
                 AddTableRow(table, "Daily Downloads", config.IOSMetrics.DailyDownloads, null, null, config.IncludeLastPeriodData, 4);
                 AddTableRow(table, "Sessions per Device", config.IOSMetrics.SessionsPerDevice, null, null, config.IncludeLastPeriodData, 5);
-                AddTableRow(table, "Crash Rate per Session", config.IOSMetrics.CrashRatePerSession, null, null, config.IncludeLastPeriodData, 6, true);
-                AddTableRow(table, "Total Crashes", config.IOSMetrics.TotalCrashes, null, null, config.IncludeLastPeriodData, 7);
+                AddTableRow(table, "Total Crashes", config.IOSMetrics.TotalCrashes, null, null, config.IncludeLastPeriodData, 6);
+                AddTableRow(table, "Devices Active within Past 30 Days", config.IOSMetrics.DevicesActiveWithin30Days, null, null, config.IncludeLastPeriodData, 7);
+                AddTableRow(table, "Lifetime Deletions", config.IOSMetrics.LifetimeDeletions, null, null, config.IncludeLastPeriodData, 8);
+                AddTableRow(table, "Lifetime Re-Downloads", config.IOSMetrics.LifetimeReDownloads, null, null, config.IncludeLastPeriodData, 9);
             }
         });
     }
@@ -261,7 +272,6 @@ public class MobileAppReportGenerator : IReportGenerator<MobileAppReportConfig>
                     columns.RelativeColumn(1);
                     columns.RelativeColumn(1);
                     columns.RelativeColumn(1);
-                    columns.RelativeColumn(1);
                 });
 
                 // Header
@@ -272,7 +282,6 @@ public class MobileAppReportGenerator : IReportGenerator<MobileAppReportConfig>
                     header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text($"Downloads, as of {config.GetFormattedReportDate()}").FontColor(Colors.White).Bold().FontSize(8);
                     header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text($"Percent, as of {config.GetFormattedLastReportDate()}").FontColor(Colors.White).Bold().FontSize(9);
                     header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text($"Downloads, as of {config.GetFormattedLastReportDate()}").FontColor(Colors.White).Bold().FontSize(8);
-                    header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text("Percent Change").FontColor(Colors.White).Bold();
                 });
 
                 // Rows
@@ -285,7 +294,6 @@ public class MobileAppReportGenerator : IReportGenerator<MobileAppReportConfig>
                     table.Cell().Background(bgColor).Padding(6).Text(FormatValue(source.CurrentDownloads));
                     table.Cell().Background(bgColor).Padding(6).Text(FormatPercentage(source.LastPercentage));
                     table.Cell().Background(bgColor).Padding(6).Text(FormatValue(source.LastDownloads));
-                    table.Cell().Background(bgColor).Padding(6).Text(FormatPercentChange(source.DownloadsChange));
                     rowIndex++;
                 }
             }
@@ -359,7 +367,6 @@ public class MobileAppReportGenerator : IReportGenerator<MobileAppReportConfig>
                 // Rows
                 AddTableRow(table, "Total Installs", config.AndroidMetrics.TotalInstalls, config.AndroidMetrics.TotalInstallsLast, config.AndroidMetrics.TotalInstallsChange, config.IncludeLastPeriodData, 0);
                 AddTableRow(table, "Daily Downloads", config.AndroidMetrics.DailyDownloads, config.AndroidMetrics.DailyDownloadsLast, config.AndroidMetrics.DailyDownloadsChange, config.IncludeLastPeriodData, 1);
-                AddTableRow(table, "Crash Rate per Session", config.AndroidMetrics.CrashRatePerSession, config.AndroidMetrics.CrashRatePerSessionLast, config.AndroidMetrics.CrashRatePerSessionChange, config.IncludeLastPeriodData, 2, true);
             }
             else
             {
@@ -379,7 +386,6 @@ public class MobileAppReportGenerator : IReportGenerator<MobileAppReportConfig>
                 // Rows
                 AddTableRow(table, "Total Installs", config.AndroidMetrics.TotalInstalls, null, null, config.IncludeLastPeriodData, 0);
                 AddTableRow(table, "Daily Downloads", config.AndroidMetrics.DailyDownloads, null, null, config.IncludeLastPeriodData, 1);
-                AddTableRow(table, "Crash Rate per Session", config.AndroidMetrics.CrashRatePerSession, null, null, config.IncludeLastPeriodData, 2, true);
             }
         });
     }
@@ -433,7 +439,7 @@ public class MobileAppReportGenerator : IReportGenerator<MobileAppReportConfig>
                     config.PlatformComparison.IOSTotalDownloadsLast, config.PlatformComparison.AndroidTotalDownloadsLast,
                     config.PlatformComparison.IOSTotalDownloadsChange, config.PlatformComparison.AndroidTotalDownloadsChange, config.IncludeLastPeriodData, 0);
 
-                AddPlatformComparisonRow(table, $"Download base of {config.CompanyName} All",
+                AddPlatformComparisonRow(table, $"User Percent of all {config.CompanyName} Apps",
                     config.PlatformComparison.IOSUserPercent, config.PlatformComparison.AndroidUserPercent,
                     config.PlatformComparison.IOSUserPercentLast, config.PlatformComparison.AndroidUserPercentLast,
                     config.PlatformComparison.IOSUserPercentChange, config.PlatformComparison.AndroidUserPercentChange, config.IncludeLastPeriodData, 1, true);
@@ -507,6 +513,106 @@ public class MobileAppReportGenerator : IReportGenerator<MobileAppReportConfig>
         });
     }
 
+    private void ComposeHighVarianceMetrics(IContainer container, MobileAppReportConfig config)
+    {
+        var varianceThreshold = 85.0;
+        var highVarianceItems = new List<(string metric, string section, double? change)>();
+
+        // Collect iOS metrics with high variance
+        if (config.IOSMetrics.ImpressionsChange.HasValue && Math.Abs(config.IOSMetrics.ImpressionsChange.Value) > varianceThreshold)
+            highVarianceItems.Add(("Impressions (iOS)", "iOS Metrics", config.IOSMetrics.ImpressionsChange.Value));
+        if (config.IOSMetrics.ProductPageViewsChange.HasValue && Math.Abs(config.IOSMetrics.ProductPageViewsChange.Value) > varianceThreshold)
+            highVarianceItems.Add(("Product Page Views (iOS)", "iOS Metrics", config.IOSMetrics.ProductPageViewsChange.Value));
+        if (config.IOSMetrics.ConversionRateChange.HasValue && Math.Abs(config.IOSMetrics.ConversionRateChange.Value) > varianceThreshold)
+            highVarianceItems.Add(("Conversion Rate (iOS)", "iOS Metrics", config.IOSMetrics.ConversionRateChange.Value));
+        if (config.IOSMetrics.TotalDownloadsChange.HasValue && Math.Abs(config.IOSMetrics.TotalDownloadsChange.Value) > varianceThreshold)
+            highVarianceItems.Add(("Total Downloads (iOS)", "iOS Metrics", config.IOSMetrics.TotalDownloadsChange.Value));
+        if (config.IOSMetrics.DailyDownloadsChange.HasValue && Math.Abs(config.IOSMetrics.DailyDownloadsChange.Value) > varianceThreshold)
+            highVarianceItems.Add(("Daily Downloads (iOS)", "iOS Metrics", config.IOSMetrics.DailyDownloadsChange.Value));
+        if (config.IOSMetrics.SessionsPerDeviceChange.HasValue && Math.Abs(config.IOSMetrics.SessionsPerDeviceChange.Value) > varianceThreshold)
+            highVarianceItems.Add(("Sessions per Device (iOS)", "iOS Metrics", config.IOSMetrics.SessionsPerDeviceChange.Value));
+        if (config.IOSMetrics.TotalCrashesChange.HasValue && Math.Abs(config.IOSMetrics.TotalCrashesChange.Value) > varianceThreshold)
+            highVarianceItems.Add(("Total Crashes (iOS)", "iOS Metrics", config.IOSMetrics.TotalCrashesChange.Value));
+        if (config.IOSMetrics.DevicesActiveWithin30DaysChange.HasValue && Math.Abs(config.IOSMetrics.DevicesActiveWithin30DaysChange.Value) > varianceThreshold)
+            highVarianceItems.Add(("Devices Active within Past 30 Days (iOS)", "iOS Metrics", config.IOSMetrics.DevicesActiveWithin30DaysChange.Value));
+        if (config.IOSMetrics.LifetimeDeletionsChange.HasValue && Math.Abs(config.IOSMetrics.LifetimeDeletionsChange.Value) > varianceThreshold)
+            highVarianceItems.Add(("Lifetime Deletions (iOS)", "iOS Metrics", config.IOSMetrics.LifetimeDeletionsChange.Value));
+        if (config.IOSMetrics.LifetimeReDownloadsChange.HasValue && Math.Abs(config.IOSMetrics.LifetimeReDownloadsChange.Value) > varianceThreshold)
+            highVarianceItems.Add(("Lifetime Re-Downloads (iOS)", "iOS Metrics", config.IOSMetrics.LifetimeReDownloadsChange.Value));
+
+        // Collect Android metrics with high variance
+        if (config.AndroidMetrics.TotalInstallsChange.HasValue && Math.Abs(config.AndroidMetrics.TotalInstallsChange.Value) > varianceThreshold)
+            highVarianceItems.Add(("Total Installs (Android)", "Android Metrics", config.AndroidMetrics.TotalInstallsChange.Value));
+        if (config.AndroidMetrics.DailyDownloadsChange.HasValue && Math.Abs(config.AndroidMetrics.DailyDownloadsChange.Value) > varianceThreshold)
+            highVarianceItems.Add(("Daily Downloads (Android)", "Android Metrics", config.AndroidMetrics.DailyDownloadsChange.Value));
+        if (config.AndroidMetrics.CrashRatePerSessionChange.HasValue && Math.Abs(config.AndroidMetrics.CrashRatePerSessionChange.Value) > varianceThreshold)
+            highVarianceItems.Add(("Crash Rate per Session (Android)", "Android Metrics", config.AndroidMetrics.CrashRatePerSessionChange.Value));
+
+        // Collect Platform Comparison metrics with high variance
+        if (config.PlatformComparison.IOSTotalDownloadsChange.HasValue && Math.Abs(config.PlatformComparison.IOSTotalDownloadsChange.Value) > varianceThreshold)
+            highVarianceItems.Add(("Total Downloads - iOS", "Platform Comparison", config.PlatformComparison.IOSTotalDownloadsChange.Value));
+        if (config.PlatformComparison.AndroidTotalDownloadsChange.HasValue && Math.Abs(config.PlatformComparison.AndroidTotalDownloadsChange.Value) > varianceThreshold)
+            highVarianceItems.Add(("Total Downloads - Android", "Platform Comparison", config.PlatformComparison.AndroidTotalDownloadsChange.Value));
+        if (config.PlatformComparison.IOSUserPercentChange.HasValue && Math.Abs(config.PlatformComparison.IOSUserPercentChange.Value) > varianceThreshold)
+            highVarianceItems.Add(("User Percent - iOS", "Platform Comparison", config.PlatformComparison.IOSUserPercentChange.Value));
+        if (config.PlatformComparison.AndroidUserPercentChange.HasValue && Math.Abs(config.PlatformComparison.AndroidUserPercentChange.Value) > varianceThreshold)
+            highVarianceItems.Add(("User Percent - Android", "Platform Comparison", config.PlatformComparison.AndroidUserPercentChange.Value));
+        if (config.PlatformComparison.IOSDailyDownloadsChange.HasValue && Math.Abs(config.PlatformComparison.IOSDailyDownloadsChange.Value) > varianceThreshold)
+            highVarianceItems.Add(("Daily Downloads - iOS", "Platform Comparison", config.PlatformComparison.IOSDailyDownloadsChange.Value));
+        if (config.PlatformComparison.AndroidDailyDownloadsChange.HasValue && Math.Abs(config.PlatformComparison.AndroidDailyDownloadsChange.Value) > varianceThreshold)
+            highVarianceItems.Add(("Daily Downloads - Android", "Platform Comparison", config.PlatformComparison.AndroidDailyDownloadsChange.Value));
+        if (config.PlatformComparison.IOSCrashRateChange.HasValue && Math.Abs(config.PlatformComparison.IOSCrashRateChange.Value) > varianceThreshold)
+            highVarianceItems.Add(("Crash Rate - iOS", "Platform Comparison", config.PlatformComparison.IOSCrashRateChange.Value));
+        if (config.PlatformComparison.AndroidCrashRateChange.HasValue && Math.Abs(config.PlatformComparison.AndroidCrashRateChange.Value) > varianceThreshold)
+            highVarianceItems.Add(("Crash Rate - Android", "Platform Comparison", config.PlatformComparison.AndroidCrashRateChange.Value));
+
+        if (highVarianceItems.Count == 0)
+            return;
+
+        container.Column(column =>
+        {
+            column.Item().Text("High Variance Metrics (over ±85%)")
+                .FontSize(16)
+                .Bold()
+                .FontColor(Colors.Blue.Medium);
+
+            column.Item().PaddingTop(8).Text("The following metrics experienced significant changes (greater than ±85%) from the previous period:")
+                .FontSize(10)
+                .Italic();
+
+            column.Item().PaddingTop(10).Element(c =>
+            {
+                c.Table(table =>
+                {
+                    table.ColumnsDefinition(columns =>
+                    {
+                        columns.RelativeColumn(2);
+                        columns.RelativeColumn(1.5f);
+                        columns.RelativeColumn(1);
+                    });
+
+                    // Header
+                    table.Header(header =>
+                    {
+                        header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text("Metric").FontColor(Colors.White).Bold();
+                        header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text("Section").FontColor(Colors.White).Bold();
+                        header.Cell().Background(Colors.Blue.Darken2).Padding(8).Text("Percent Change").FontColor(Colors.White).Bold();
+                    });
+
+                    // Rows
+                    for (int i = 0; i < highVarianceItems.Count; i++)
+                    {
+                        var (metric, section, change) = highVarianceItems[i];
+                        var bgColor = (i % 2 == 0) ? Colors.White : Colors.Grey.Lighten3;
+                        table.Cell().Background(bgColor).Padding(6).Text(metric);
+                        table.Cell().Background(bgColor).Padding(6).Text(section);
+                        table.Cell().Background(bgColor).Padding(6).Text(FormatPercentChange(change));
+                    }
+                });
+            });
+        });
+    }
+
     private void AddTableRow(TableDescriptor table, string metric, double? current, double? last, double? change, bool includeLastPeriod, int rowIndex = 0, bool isPercent = false)
     {
         var bgColor = (rowIndex % 2 == 0) ? Colors.White : Colors.Grey.Lighten3;
@@ -572,3 +678,9 @@ public class MobileAppReportGenerator : IReportGenerator<MobileAppReportConfig>
         return $"{sign}{value.Value:N2}%";
     }
 }
+
+
+
+
+
+

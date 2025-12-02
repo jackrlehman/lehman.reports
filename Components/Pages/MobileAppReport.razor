@@ -209,6 +209,20 @@
                                     </label>
                                 </div>
                             </div>
+                            <div class="col-md-6">
+                                <div class="form-check mb-2">
+                                    <InputCheckbox @bind-Value="config.IncludeHighVarianceMetrics" class="form-check-input" id="highVariance" disabled="@(!config.IncludeLastPeriodData)" />
+                                    <label class="form-check-label" for="highVariance" style="@(!config.IncludeLastPeriodData ? "opacity: 0.5;" : "")">
+                                        Include High Variance Metrics (over ±85%)
+                                    </label>
+                                    @if (!config.IncludeLastPeriodData)
+                                    {
+                                        <small class="form-text" style="color: var(--text-muted); display: block; margin-top: 0.25rem;">
+                                            Requires Last Period Data enabled
+                                        </small>
+                                    }
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -291,6 +305,26 @@
                                     </div>
                                 </div>
                             </div>
+                            <div class="row align-inputs-bottom">
+                                <div class="col-md-3">
+                                    <div class="mb-3">
+                                        <label class="form-label">Devices Active within Past 30 Days</label>
+                                        <InputNumber TValue="double?" @bind-Value="config.IOSMetrics.DevicesActiveWithin30Days" class="form-control" />
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="mb-3">
+                                        <label class="form-label">Lifetime Deletions</label>
+                                        <InputNumber TValue="double?" @bind-Value="config.IOSMetrics.LifetimeDeletions" class="form-control" />
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="mb-3">
+                                        <label class="form-label">Lifetime Re-Downloads</label>
+                                        <InputNumber TValue="double?" @bind-Value="config.IOSMetrics.LifetimeReDownloads" class="form-control" />
+                                    </div>
+                                </div>
+                            </div>
 
                             @if (config.IncludeLastPeriodData)
                             {
@@ -344,6 +378,26 @@
                                         <div class="mb-3">
                                             <label class="form-label">Total Crashes (Last)</label>
                                             <InputNumber TValue="double?" @bind-Value="config.IOSMetrics.TotalCrashesLast" class="form-control" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row align-inputs-bottom">
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label class="form-label">Devices Active within Past 30 Days (Last)</label>
+                                            <InputNumber TValue="double?" @bind-Value="config.IOSMetrics.DevicesActiveWithin30DaysLast" class="form-control" />
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label class="form-label">Lifetime Deletions (Last)</label>
+                                            <InputNumber TValue="double?" @bind-Value="config.IOSMetrics.LifetimeDeletionsLast" class="form-control" />
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label class="form-label">Lifetime Re-Downloads (Last)</label>
+                                            <InputNumber TValue="double?" @bind-Value="config.IOSMetrics.LifetimeReDownloadsLast" class="form-control" />
                                         </div>
                                     </div>
                                 </div>
@@ -712,7 +766,10 @@
                     !config.IOSMetrics.DailyDownloads.HasValue ||
                     !config.IOSMetrics.SessionsPerDevice.HasValue ||
                     !config.IOSMetrics.CrashRatePerSession.HasValue ||
-                    !config.IOSMetrics.TotalCrashes.HasValue)
+                    !config.IOSMetrics.TotalCrashes.HasValue ||
+                    !config.IOSMetrics.DevicesActiveWithin30Days.HasValue ||
+                    !config.IOSMetrics.LifetimeDeletions.HasValue ||
+                    !config.IOSMetrics.LifetimeReDownloads.HasValue)
                 {
                     ToastService.ShowError("iOS section is selected but some required fields are missing. Please fill in all iOS metrics or uncheck the section.");
                     isGenerating = false;
@@ -849,6 +906,9 @@
             config.IOSMetrics.SessionsPerDeviceLast = pendingImportConfig.IOSMetrics.SessionsPerDevice;
             config.IOSMetrics.CrashRatePerSessionLast = pendingImportConfig.IOSMetrics.CrashRatePerSession;
             config.IOSMetrics.TotalCrashesLast = pendingImportConfig.IOSMetrics.TotalCrashes;
+            config.IOSMetrics.DevicesActiveWithin30DaysLast = pendingImportConfig.IOSMetrics.DevicesActiveWithin30Days;
+            config.IOSMetrics.LifetimeDeletionsLast = pendingImportConfig.IOSMetrics.LifetimeDeletions;
+            config.IOSMetrics.LifetimeReDownloadsLast = pendingImportConfig.IOSMetrics.LifetimeReDownloads;
 
             // Download sources - map current to last
             for (int i = 0; i < Math.Min(config.IOSMetrics.DownloadSources.Count, pendingImportConfig.IOSMetrics.DownloadSources.Count); i++)

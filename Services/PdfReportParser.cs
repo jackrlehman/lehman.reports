@@ -93,6 +93,9 @@ public class PdfReportParser
         config.IOSMetrics.SessionsPerDeviceLast = config.IOSMetrics.SessionsPerDevice;
         config.IOSMetrics.CrashRatePerSessionLast = config.IOSMetrics.CrashRatePerSession;
         config.IOSMetrics.TotalCrashesLast = config.IOSMetrics.TotalCrashes;
+        config.IOSMetrics.DevicesActiveWithin30DaysLast = config.IOSMetrics.DevicesActiveWithin30Days;
+        config.IOSMetrics.LifetimeDeletionsLast = config.IOSMetrics.LifetimeDeletions;
+        config.IOSMetrics.LifetimeReDownloadsLast = config.IOSMetrics.LifetimeReDownloads;
 
         // Clear current values (change values are computed properties, don't need to clear)
         config.IOSMetrics.Impressions = null;
@@ -103,6 +106,9 @@ public class PdfReportParser
         config.IOSMetrics.SessionsPerDevice = null;
         config.IOSMetrics.CrashRatePerSession = null;
         config.IOSMetrics.TotalCrashes = null;
+        config.IOSMetrics.DevicesActiveWithin30Days = null;
+        config.IOSMetrics.LifetimeDeletions = null;
+        config.IOSMetrics.LifetimeReDownloads = null;
 
         // Download Sources - move current to last
         foreach (var source in config.IOSMetrics.DownloadSources)
