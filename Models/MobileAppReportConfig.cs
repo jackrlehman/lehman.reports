@@ -3,7 +3,7 @@ namespace ReportBuilder.Models;
 public class MobileAppReportConfig
 {
     // Version
-    public string Version { get; set; } = "1.03";
+    public string Version { get; set; } = "1.04";
 
     // General Information
     public string CompanyName { get; set; } = string.Empty;
@@ -54,9 +54,11 @@ public class MobileAppReportConfig
     public bool IncludeIOSSection { get; set; } = true;
     public bool IncludeAndroidSection { get; set; } = true;
     public bool IncludePlatformComparison { get; set; } = true;
-    public bool IncludeTechnicalSpecifications { get; set; } = true;
-    public bool IncludeHighVarianceMetrics { get; set; } = false;
+    public bool IncludeHighVarianceMetrics { get; set; } = true;
     public double HighVarianceThreshold { get; set; } = 85.0;
+    
+    // iOS Sub-section Toggles
+    public bool IncludeIOSDailyActiveUsersByVersion { get; set; } = true;
 
     // Executive Summary
     public string ExecutiveSummary { get; set; } = string.Empty;
@@ -73,33 +75,30 @@ public class MobileAppReportConfig
     // Platform Comparison
     public PlatformComparisonMetrics PlatformComparison { get; set; } = new();
 
-    // Technical Specifications
-    [System.Text.Json.Serialization.JsonConverter(typeof(AppSizeJsonConverter))]
-    public double? AppSize { get; set; }
-    public string AppSizeUnit { get; set; } = "MB";
+
 
     // Method to auto-populate Platform Comparison from iOS and Android data
     public void SyncPlatformComparison()
     {
         // Total Downloads
         PlatformComparison.IOSTotalDownloads = IOSMetrics.TotalDownloads;
-        PlatformComparison.AndroidTotalDownloads = AndroidMetrics.TotalInstalls;
+        PlatformComparison.AndroidTotalDownloads = AndroidMetrics.TotalDownloads;
         PlatformComparison.IOSTotalDownloadsLast = IOSMetrics.TotalDownloadsLast;
-        PlatformComparison.AndroidTotalDownloadsLast = AndroidMetrics.TotalInstallsLast;
+        PlatformComparison.AndroidTotalDownloadsLast = AndroidMetrics.TotalDownloadsLast;
 
         // User % calculation (calculate as percentage of total across both platforms)
-        var totalDownloads = (IOSMetrics.TotalDownloads ?? 0) + (AndroidMetrics.TotalInstalls ?? 0);
+        var totalDownloads = (IOSMetrics.TotalDownloads ?? 0) + (AndroidMetrics.TotalDownloads ?? 0);
         if (totalDownloads > 0)
         {
             PlatformComparison.IOSUserPercent = Math.Round((IOSMetrics.TotalDownloads ?? 0) / totalDownloads * 100, 2);
-            PlatformComparison.AndroidUserPercent = Math.Round((AndroidMetrics.TotalInstalls ?? 0) / totalDownloads * 100, 2);
+            PlatformComparison.AndroidUserPercent = Math.Round((AndroidMetrics.TotalDownloads ?? 0) / totalDownloads * 100, 2);
         }
 
-        var totalDownloadsLast = (IOSMetrics.TotalDownloadsLast ?? 0) + (AndroidMetrics.TotalInstallsLast ?? 0);
+        var totalDownloadsLast = (IOSMetrics.TotalDownloadsLast ?? 0) + (AndroidMetrics.TotalDownloadsLast ?? 0);
         if (totalDownloadsLast > 0)
         {
             PlatformComparison.IOSUserPercentLast = Math.Round((IOSMetrics.TotalDownloadsLast ?? 0) / totalDownloadsLast * 100, 2);
-            PlatformComparison.AndroidUserPercentLast = Math.Round((AndroidMetrics.TotalInstallsLast ?? 0) / totalDownloadsLast * 100, 2);
+            PlatformComparison.AndroidUserPercentLast = Math.Round((AndroidMetrics.TotalDownloadsLast ?? 0) / totalDownloadsLast * 100, 2);
         }
 
         // Daily Downloads
@@ -108,54 +107,45 @@ public class MobileAppReportConfig
         PlatformComparison.IOSDailyDownloadsLast = IOSMetrics.DailyDownloadsLast;
         PlatformComparison.AndroidDailyDownloadsLast = AndroidMetrics.DailyDownloadsLast;
 
-        // Crash Rate
-        PlatformComparison.IOSCrashRate = IOSMetrics.CrashRatePerSession;
-        PlatformComparison.AndroidCrashRate = AndroidMetrics.CrashRatePerSession;
-        PlatformComparison.IOSCrashRateLast = IOSMetrics.CrashRatePerSessionLast;
-        PlatformComparison.AndroidCrashRateLast = AndroidMetrics.CrashRatePerSessionLast;
+        // Total Crashes
+        PlatformComparison.IOSTotalCrashes = IOSMetrics.TotalCrashes;
+        PlatformComparison.AndroidTotalCrashes = AndroidMetrics.TotalCrashes;
+        PlatformComparison.IOSTotalCrashesLast = IOSMetrics.TotalCrashesLast;
+        PlatformComparison.AndroidTotalCrashesLast = AndroidMetrics.TotalCrashesLast;
     }
 }
 
 public class IOSMetrics
 {
     // Key Metrics - Current
-    public double? Impressions { get; set; }
-    public double? ProductPageViews { get; set; }
-    public double? ConversionRate { get; set; }
     public double? TotalDownloads { get; set; }
     public double? DailyDownloads { get; set; }
-    public double? SessionsPerDevice { get; set; }
-    public double? CrashRatePerSession { get; set; }
     public double? TotalCrashes { get; set; }
     public double? DevicesActiveWithin30Days { get; set; }
     public double? LifetimeDeletions { get; set; }
     public double? LifetimeReDownloads { get; set; }
 
     // Key Metrics - Last Report (Optional)
-    public double? ImpressionsLast { get; set; }
-    public double? ProductPageViewsLast { get; set; }
-    public double? ConversionRateLast { get; set; }
     public double? TotalDownloadsLast { get; set; }
     public double? DailyDownloadsLast { get; set; }
-    public double? SessionsPerDeviceLast { get; set; }
-    public double? CrashRatePerSessionLast { get; set; }
     public double? TotalCrashesLast { get; set; }
     public double? DevicesActiveWithin30DaysLast { get; set; }
     public double? LifetimeDeletionsLast { get; set; }
     public double? LifetimeReDownloadsLast { get; set; }
 
     // Computed % Change (Read-only)
-    public double? ImpressionsChange => CalculatePercentChange(Impressions, ImpressionsLast);
-    public double? ProductPageViewsChange => CalculatePercentChange(ProductPageViews, ProductPageViewsLast);
-    public double? ConversionRateChange => CalculatePercentChange(ConversionRate, ConversionRateLast);
     public double? TotalDownloadsChange => CalculatePercentChange(TotalDownloads, TotalDownloadsLast);
     public double? DailyDownloadsChange => CalculatePercentChange(DailyDownloads, DailyDownloadsLast);
-    public double? SessionsPerDeviceChange => CalculatePercentChange(SessionsPerDevice, SessionsPerDeviceLast);
-    public double? CrashRatePerSessionChange => CalculatePercentChange(CrashRatePerSession, CrashRatePerSessionLast);
     public double? TotalCrashesChange => CalculatePercentChange(TotalCrashes, TotalCrashesLast);
     public double? DevicesActiveWithin30DaysChange => CalculatePercentChange(DevicesActiveWithin30Days, DevicesActiveWithin30DaysLast);
     public double? LifetimeDeletionsChange => CalculatePercentChange(LifetimeDeletions, LifetimeDeletionsLast);
     public double? LifetimeReDownloadsChange => CalculatePercentChange(LifetimeReDownloads, LifetimeReDownloadsLast);
+
+    // Daily Active Users broken down by individual app versions (optional breakdown of DevicesActiveWithin30Days)
+    public List<VersionDAU> DailyActiveUsersByVersionBreakdown { get; set; } = new();
+    
+    // Daily Active Users by version breakdown - Last Report (Optional)
+    public List<VersionDAU> DailyActiveUsersByVersionBreakdownLast { get; set; } = new();
 
     // Download Sources
     public List<DownloadSource> DownloadSources { get; set; } = new();
@@ -220,22 +210,28 @@ public class DownloadSource
     }
 }
 
+public class VersionDAU
+{
+    public string VersionNumber { get; set; } = string.Empty;
+    public double? DailyActiveUsers { get; set; }
+}
+
 public class AndroidMetrics
 {
     // Current Metrics
-    public double? TotalInstalls { get; set; }
+    public double? TotalDownloads { get; set; }
     public double? DailyDownloads { get; set; }
-    public double? CrashRatePerSession { get; set; }
+    public double? TotalCrashes { get; set; }
 
     // Last Report Metrics (Optional)
-    public double? TotalInstallsLast { get; set; }
+    public double? TotalDownloadsLast { get; set; }
     public double? DailyDownloadsLast { get; set; }
-    public double? CrashRatePerSessionLast { get; set; }
+    public double? TotalCrashesLast { get; set; }
 
     // Computed % Change
-    public double? TotalInstallsChange => CalculatePercentChange(TotalInstalls, TotalInstallsLast);
+    public double? TotalDownloadsChange => CalculatePercentChange(TotalDownloads, TotalDownloadsLast);
     public double? DailyDownloadsChange => CalculatePercentChange(DailyDownloads, DailyDownloadsLast);
-    public double? CrashRatePerSessionChange => CalculatePercentChange(CrashRatePerSession, CrashRatePerSessionLast);
+    public double? TotalCrashesChange => CalculatePercentChange(TotalCrashes, TotalCrashesLast);
 
     private static double? CalculatePercentChange(double? current, double? last)
     {
@@ -254,17 +250,11 @@ public class PlatformComparisonMetrics
     public double? IOSTotalDownloadsLast { get; set; }
     public double? AndroidTotalDownloadsLast { get; set; }
 
-    public double? IOSTotalDownloadsChange => CalculatePercentChange(IOSTotalDownloads, IOSTotalDownloadsLast);
-    public double? AndroidTotalDownloadsChange => CalculatePercentChange(AndroidTotalDownloads, AndroidTotalDownloadsLast);
-
     // User % of all Apps
     public double? IOSUserPercent { get; set; }
     public double? AndroidUserPercent { get; set; }
     public double? IOSUserPercentLast { get; set; }
     public double? AndroidUserPercentLast { get; set; }
-
-    public double? IOSUserPercentChange => CalculatePercentChange(IOSUserPercent, IOSUserPercentLast);
-    public double? AndroidUserPercentChange => CalculatePercentChange(AndroidUserPercent, AndroidUserPercentLast);
 
     // Daily Downloads
     public double? IOSDailyDownloads { get; set; }
@@ -272,17 +262,11 @@ public class PlatformComparisonMetrics
     public double? IOSDailyDownloadsLast { get; set; }
     public double? AndroidDailyDownloadsLast { get; set; }
 
-    public double? IOSDailyDownloadsChange => CalculatePercentChange(IOSDailyDownloads, IOSDailyDownloadsLast);
-    public double? AndroidDailyDownloadsChange => CalculatePercentChange(AndroidDailyDownloads, AndroidDailyDownloadsLast);
-
-    // Crash Rate
-    public double? IOSCrashRate { get; set; }
-    public double? AndroidCrashRate { get; set; }
-    public double? IOSCrashRateLast { get; set; }
-    public double? AndroidCrashRateLast { get; set; }
-
-    public double? IOSCrashRateChange => CalculatePercentChange(IOSCrashRate, IOSCrashRateLast);
-    public double? AndroidCrashRateChange => CalculatePercentChange(AndroidCrashRate, AndroidCrashRateLast);
+    // Total Crashes
+    public double? IOSTotalCrashes { get; set; }
+    public double? AndroidTotalCrashes { get; set; }
+    public double? IOSTotalCrashesLast { get; set; }
+    public double? AndroidTotalCrashesLast { get; set; }
 
     private static double? CalculatePercentChange(double? current, double? last)
     {

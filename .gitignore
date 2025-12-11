@@ -1,22 +1,24 @@
 
-.vs/
-
+# Build artifacts
 bin/
-
 obj/
-
-temp/
-
-# Tauri
-src-tauri/target/
-src-tauri/node_modules/
+publish/
 dist/
 
-# Node
-node_modules/
+# Visual Studio
+.vs/
+*.csproj.user
 
 # IDE
 .idea/
 *.swp
 *.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temp
+temp/
+*.tmp
 

@@ -1,30 +1,38 @@
+using ReportBuilder;
 using ReportBuilder.Services;
 using ReportBuilder.Components;
+using ReportBuilder.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configure to listen on localhost:5000 for Tauri
-builder.WebHost.UseUrls("http://localhost:5000");
+// Configure logging
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+if (builder.Environment.IsDevelopment())
+{
+    builder.Logging.AddDebug();
+}
 
-// Add services to the container.
+// Configure to listen on localhost:5000 for Tauri
+builder.WebHost.UseUrls(AppConstants.LocalhostUrl);
+
+// Add services to the container
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-// Add toast notification service (scoped for each Blazor circuit)
+// Register application services
 builder.Services.AddScoped<ToastService>();
+builder.Services.AddScoped<LocalStorageService>();
+builder.Services.AddScoped<IReportGenerator<MobileAppReportConfig>, MobileAppReportGenerator>();
+builder.Services.AddScoped<PdfReportParser>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Configure the HTTP request pipeline
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
     app.UseHsts();
-}
-
-// Skip HTTPS redirection when running in Tauri
-if (!app.Environment.IsDevelopment())
-{
     app.UseHttpsRedirection();
 }
 
@@ -33,5 +41,8 @@ app.UseAntiforgery();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
+
+var logger = app.Services.GetRequiredService<ILogger<Program>>();
+logger.LogInformation(LogEvents.AppStartup, "Application starting on {Url}", AppConstants.LocalhostUrl);
 
 app.Run();

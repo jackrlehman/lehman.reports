@@ -1,0 +1,57 @@
+# EditorConfig is awesome: https://EditorConfig.org
+
+# top-most EditorConfig file
+root = true
+
+# All files
+[*]
+charset = utf-8
+end_of_line = crlf
+insert_final_newline = false
+trim_trailing_whitespace = true
+
+# C# files
+[*.cs]
+indent_size = 4
+indent_style = space
+
+# Code style rules
+csharp_style_namespace_declarations = file_scoped:silent
+csharp_indent_case_contents = true
+csharp_indent_switch_labels = true
+
+# Naming conventions
+[*.cs]
+# Constants should be PascalCase
+dotnet_naming_rule.constants_should_be_pascal_case.severity = suggestion
+dotnet_naming_rule.constants_should_be_pascal_case.symbols = constants
+dotnet_naming_rule.constants_should_be_pascal_case.style = pascal_case_style
+
+dotnet_naming_symbols.constants.applicable_kinds = constant
+dotnet_naming_symbols.constants.applicable_accessibilities = public, internal, private, protected, protected_internal
+
+dotnet_naming_style.pascal_case_style.capitalization = pascal_case
+
+# Private fields should be _camelCase
+dotnet_naming_rule.private_members_should_be_camel_case.severity = suggestion
+dotnet_naming_rule.private_members_should_be_camel_case.symbols = private_members
+dotnet_naming_rule.private_members_should_be_camel_case.style = camel_case_style
+
+dotnet_naming_symbols.private_members.applicable_kinds = property, method, field, event
+dotnet_naming_symbols.private_members.applicable_accessibilities = private
+
+dotnet_naming_style.camel_case_style.capitalization = camel_case
+
+# Razor files
+[*.razor]
+indent_size = 4
+indent_style = space
+
+# JSON files
+[*.json]
+indent_size = 2
+indent_style = space
+
+# Markdown files
+[*.md]
+trim_trailing_whitespace = false

@@ -12,4 +12,11 @@
     <PackageReference Include="QuestPDF" Version="2025.7.3" />
   </ItemGroup>
 
+  <!-- Copy config files to output root (required by .NET) -->
+  <ItemGroup>
+    <None Update="Config\appsettings.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="Config\appsettings.Development.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="Config\.editorconfig" CopyToOutputDirectory="PreserveNewest" Link=".editorconfig" />
+  </ItemGroup>
+
 </Project>

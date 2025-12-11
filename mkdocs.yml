@@ -1,0 +1,70 @@
+site_name: Report Builder
+site_description: Professional PDF report generation application
+site_author: Your Team
+site_url: https://your-domain.com/docs
+docs_dir: docs
+site_dir: docs-site
+
+theme:
+  name: material
+  palette:
+    - scheme: light
+      primary: blue
+      accent: blue
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: dark
+      primary: blue
+      accent: blue
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  
+  features:
+    - content.tabs.link
+    - content.code.annotate
+    - content.code.copy
+    - navigation.instant
+    - navigation.tracking
+    - navigation.top
+    - search.suggest
+    - search.highlight
+
+plugins:
+  - search
+  - offline
+
+nav:
+  - Home: index.md
+  - Getting Started:
+    - Quick Start: guides/quick-start.md
+    - First Report: guides/first-report.md
+  - Development:
+    - Setup: development/setup.md
+    - Architecture: development/architecture.md
+    - Adding Features: development/adding-features.md
+    - Code Patterns: development/code-patterns.md
+  - Distribution:
+    - Build Distribution: guides/build-distribution.md
+  - Reference:
+    - Project Structure: reference/project-structure.md
+    - API Reference: reference/api-reference.md
+    - Configuration: reference/configuration.md
+    - FAQ: reference/faq.md
+  - License: license.md
+
+markdown_extensions:
+  - pymdownx.highlight:
+      use_pygments: true
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:pymdownx.emoji.twemoji
+      emoji_generator: !!python/name:pymdownx.emoji.to_svg
+  - admonition
+  - toc:
+      permalink: true
+
+copyright: Copyright &copy; 2025 Report Builder
