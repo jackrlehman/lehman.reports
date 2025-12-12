@@ -1,4 +1,4 @@
-# Quick Build Script - Self-Contained Distribution
+﻿# Quick Build Script - Self-Contained Distribution
 
 # USAGE: .\build-distribution.ps1 [VERSION]
 # EXAMPLE: .\build-distribution.ps1 "1.04"
@@ -10,25 +10,25 @@ param(
 function Write-Header {
     param([string]$Text)
     Write-Host ""
-    Write-Host "════════════════════════════════════════════════════════════" -ForegroundColor Cyan
+    Write-Host "============================================================" -ForegroundColor Cyan
     Write-Host $Text -ForegroundColor Cyan
-    Write-Host "════════════════════════════════════════════════════════════" -ForegroundColor Cyan
+    Write-Host "============================================================" -ForegroundColor Cyan
     Write-Host ""
 }
 
 function Write-Status {
     param([string]$Text)
-    Write-Host "→ $Text" -ForegroundColor Yellow
+    Write-Host "-> $Text" -ForegroundColor Yellow
 }
 
 function Write-Success {
     param([string]$Text)
-    Write-Host "✓ $Text" -ForegroundColor Green
+    Write-Host "[OK] $Text" -ForegroundColor Green
 }
 
 function Write-Error {
     param([string]$Text)
-    Write-Host "✗ $Text" -ForegroundColor Red
+    Write-Host "[ERROR] $Text" -ForegroundColor Red
 }
 
 # Start
@@ -44,14 +44,13 @@ Write-Success "dotnet SDK found"
 
 # Clean previous builds
 Write-Status "Cleaning previous builds..."
-Remove-Item -Recurse -Force bin -ErrorAction SilentlyContinue
-Remove-Item -Recurse -Force obj -ErrorAction SilentlyContinue
+dotnet clean ReportBuilder.Web.csproj -c Release -q
 Remove-Item -Recurse -Force publish -ErrorAction SilentlyContinue
 Write-Success "Clean complete"
 
 # Restore packages
 Write-Status "Restoring NuGet packages..."
-dotnet restore ReportBuilder.Web.csproj -q
+dotnet restore ReportBuilder.Web.csproj --nologo --verbosity quiet 2>&1 | Out-Null
 if ($LASTEXITCODE -ne 0) {
     Write-Error "Restore failed!"
     exit 1
@@ -60,7 +59,9 @@ Write-Success "Packages restored"
 
 # Build Release
 Write-Status "Building Release configuration..."
-dotnet build ReportBuilder.Web.csproj -c Release -q
+# Ensure staticwebassets directory exists (workaround for permissions issue)
+New-Item -ItemType Directory -Force -Path "obj\Release\net9.0\staticwebassets" -ErrorAction SilentlyContinue | Out-Null
+dotnet build ReportBuilder.Web.csproj -c Release --nologo --verbosity quiet 2>&1 | Out-Null
 if ($LASTEXITCODE -ne 0) {
     Write-Error "Build failed!"
     exit 1
@@ -71,17 +72,11 @@ Write-Success "Build successful"
 Write-Status "Publishing self-contained Windows application..."
 Write-Host "  (This may take 2-3 minutes...)" -ForegroundColor Gray
 
-dotnet publish ReportBuilder.Web.csproj `
-    -c Release `
-    -r win-x64 `
-    --self-contained `
-    -p:PublishSingleFile=true `
-    -p:SelfContained=true `
-    -p:IncludeAllContentForSelfExtract=true `
-    -p:DebugType=none `
-    -p:DebugSymbols=false `
-    -o publish `
-    -q
+# Ensure staticwebassets directory exists for publish
+New-Item -ItemType Directory -Force -Path "obj\Release\net9.0\win-x64\staticwebassets" -ErrorAction SilentlyContinue | Out-Null
+
+# Use a single-line publish call to avoid fragile backtick continuations
+dotnet publish ReportBuilder.Web.csproj -c Release -r win-x64 --self-contained -p:PublishSingleFile=true -p:SelfContained=true -p:IncludeAllContentForSelfExtract=true -p:DebugType=none -p:DebugSymbols=false -o publish --nologo --verbosity quiet 2>&1 | Out-Null
 
 if ($LASTEXITCODE -ne 0) {
     Write-Error "Publish failed!"
@@ -99,26 +94,54 @@ Write-Success "Executable verified"
 
 # Build documentation with MkDocs
 Write-Status "Building documentation with MkDocs..."
-try {
-    python -m mkdocs build -q
-    if ($LASTEXITCODE -ne 0) {
-        Write-Error "MkDocs build failed!"
-        exit 1
+$pythonExists = Get-Command python -ErrorAction SilentlyContinue
+if ($pythonExists) {
+    python -m mkdocs build -q 2>&1 | Out-Null
+    if ($LASTEXITCODE -eq 0) {
+        Write-Success "Documentation built"
+    } else {
+        Write-Host "[WARN] MkDocs not installed - skipping documentation" -ForegroundColor Yellow
+        Write-Host "  (To install: pip install mkdocs mkdocs-material)" -ForegroundColor Gray
     }
-    Write-Success "Documentation built"
-} catch {
-    Write-Error "Python/MkDocs not found - skipping documentation build"
-    Write-Host "  (Optional: Install with: pip install mkdocs mkdocs-material)" -ForegroundColor Gray
+} else {
+    Write-Host "[WARN] Python not found - skipping documentation" -ForegroundColor Yellow
+    Write-Host "  (Optional: Install Python from python.org)" -ForegroundColor Gray
 }
 
-# Copy to distribution folder
+# Copy to distribution folder (robust pure-PowerShell copy)
 Write-Status "Copying to distribution folder..."
 $distAppPath = "dist\app"
+
+# Ensure a clean destination
 if (Test-Path $distAppPath) {
-    Remove-Item -Recurse -Force $distAppPath
+    Remove-Item -Recurse -Force $distAppPath -ErrorAction SilentlyContinue
 }
+# Ensure parent 'dist' exists, then create dist\app
 New-Item -ItemType Directory -Path "dist" -Force | Out-Null
-Copy-Item -Recurse -Force "publish\*" "$distAppPath\"
+New-Item -ItemType Directory -Path $distAppPath -Force | Out-Null
+
+if (-not (Test-Path "publish")) {
+    Write-Error "Publish folder not found; nothing to copy."
+    exit 1
+}
+
+# Copy each top-level item from publish into dist\app, removing conflicts first
+Get-ChildItem -LiteralPath "publish" -Force | ForEach-Object {
+    $src = $_.FullName
+    $dest = Join-Path $distAppPath $_.Name
+
+    if (Test-Path $dest) {
+        Remove-Item -Force -Recurse -ErrorAction SilentlyContinue $dest
+    }
+
+    if ($_.PSIsContainer) {
+        Copy-Item -LiteralPath $src -Destination $dest -Recurse -Force
+    } else {
+        Copy-Item -LiteralPath $src -Destination $distAppPath -Force
+    }
+}
+
+Write-Success "Files copied to distribution folder"
 
 # Copy app icon
 if (Test-Path "app-icon.ico") {
@@ -133,20 +156,35 @@ if (Test-Path "site") {
     Write-Success "Documentation included in distribution"
 }
 
-# Create desktop shortcut with icon
+# Create desktop shortcut with icon (use absolute paths and fail gracefully)
 Write-Status "Creating desktop shortcut..."
-$shortcutPath = "$distAppPath\Report Builder.lnk"
-$targetPath = "$distAppPath\ReportBuilder.Web.exe"
-$iconPath = "$distAppPath\app-icon.ico"
+# Resolve absolute path for $distAppPath
+try {
+    $distAppFull = (Resolve-Path -LiteralPath $distAppPath).Path
+} catch {
+    # Fallback to combining current directory with the relative path
+    $distAppFull = Join-Path (Get-Location).Path $distAppPath
+}
 
+# Build absolute shortcut, target and icon paths
+$shortcutPath = Join-Path $distAppFull "Report Builder.lnk"
+$targetPath = Join-Path $distAppFull "ReportBuilder.Web.exe"
+$iconPath = Join-Path $distAppFull "app-icon.ico"
+
+# Create the shortcut and save it, handling possible errors
 $WshShell = New-Object -ComObject WScript.Shell
-$shortcut = $WshShell.CreateShortcut($shortcutPath)
-$shortcut.TargetPath = $targetPath
-$shortcut.WorkingDirectory = $distAppPath
-$shortcut.IconLocation = $iconPath
-$shortcut.Description = "Report Builder - App Analytics Dashboard"
-$shortcut.Save()
-Write-Success "Desktop shortcut created with app icon"
+try {
+    $shortcut = $WshShell.CreateShortcut($shortcutPath)
+    $shortcut.TargetPath = $targetPath
+    $shortcut.WorkingDirectory = $distAppFull
+    $shortcut.IconLocation = $iconPath
+    $shortcut.Description = "Report Builder - App Analytics Dashboard"
+    $shortcut.Save()
+    Write-Success "Desktop shortcut created with app icon"
+} catch {
+    Write-Error "Unable to create desktop shortcut at '$shortcutPath': $($_.Exception.Message)"
+    # do not exit; continue with distribution (shortcut is optional)
+}
 
 Write-Success "Distribution folder updated"
 
@@ -165,7 +203,7 @@ $appExeSize = (Get-Item "$distAppPath\ReportBuilder.Web.exe").Length / 1MB
 $totalFiles = (Get-ChildItem -Recurse $distAppPath | Measure-Object).Count
 
 # Final summary
-Write-Header "Build Complete ✓"
+Write-Header "Build Complete [OK]"
 
 Write-Host "Distribution Package Information:" -ForegroundColor Cyan
 Write-Host "  Version: $Version" -ForegroundColor White
@@ -176,9 +214,9 @@ Write-Host "  Total Files: $totalFiles" -ForegroundColor White
 Write-Host ""
 
 Write-Host "Distribution Ready:" -ForegroundColor Green
-Write-Host "  ✓ Executable: $distAppPath\ReportBuilder.Web.exe" -ForegroundColor Green
-Write-Host "  ✓ Documentation: dist\documentation (local offline docs)" -ForegroundColor Green
-Write-Host "  ✓ Archive: $zipName" -ForegroundColor Green
+Write-Host "  [OK] Executable: $distAppPath\ReportBuilder.Web.exe" -ForegroundColor Green
+Write-Host "  [OK] Documentation: dist\documentation (local offline docs)" -ForegroundColor Green
+Write-Host "  [OK] Archive: $zipName" -ForegroundColor Green
 Write-Host ""
 
 Write-Host "Next Steps:" -ForegroundColor Cyan
@@ -199,7 +237,7 @@ Write-Host "     - Double-click ReportBuilder.Web.exe"
 Write-Host "     - Application opens in browser"
 Write-Host ""
 
-Write-Host "════════════════════════════════════════════════════════════" -ForegroundColor Cyan
-Write-Host "Ready for distribution! 🚀" -ForegroundColor Green
-Write-Host "════════════════════════════════════════════════════════════" -ForegroundColor Cyan
+Write-Host "============================================================" -ForegroundColor Cyan
+Write-Host "Ready for distribution!" -ForegroundColor Green
+Write-Host "============================================================" -ForegroundColor Cyan
 Write-Host ""
