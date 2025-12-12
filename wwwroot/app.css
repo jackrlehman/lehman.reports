@@ -1227,3 +1227,57 @@ html {
 .form-check {
     margin-bottom: 0.5rem !important;
 }
+
+/* Metric Link Buttons - in input groups only */
+.input-group .btn-metric-link {
+    padding: 0 0.75rem !important;
+    height: calc(1.5em + 1rem + 4px) !important;
+    min-height: calc(1.5em + 1rem + 4px) !important;
+    max-height: calc(1.5em + 1rem + 4px) !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0 0.75rem 0.75rem 0 !important;
+    font-size: 0.875rem;
+    flex-shrink: 0;
+    line-height: 1;
+}
+
+.input-group .btn-metric-link.btn-primary {
+    background: var(--accent-blue) !important;
+    border-color: var(--accent-blue) !important;
+    color: white !important;
+}
+
+.input-group .btn-metric-link.btn-primary:hover {
+    background: #2563eb !important;
+    border-color: #2563eb !important;
+    transform: none;
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.5) !important;
+}
+
+.input-group .btn-metric-link.btn-success {
+    background: var(--success-color) !important;
+    border-color: var(--success-color) !important;
+    color: white !important;
+}
+
+.input-group .btn-metric-link.btn-success:hover {
+    background: #059669 !important;
+    border-color: #059669 !important;
+    transform: none;
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.5) !important;
+}
+
+/* ID Clear Buttons - Match input field height */
+.input-group .btn-outline-secondary {
+    padding: 0 0.75rem !important;
+    height: calc(1.5em + 1rem + 4px) !important;
+    min-height: calc(1.5em + 1rem + 4px) !important;
+    max-height: calc(1.5em + 1rem + 4px) !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0 0.75rem 0.75rem 0 !important;
+    line-height: 1;
+}

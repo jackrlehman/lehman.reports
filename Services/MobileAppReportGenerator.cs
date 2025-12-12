@@ -13,6 +13,7 @@ public class MobileAppReportGenerator : IReportGenerator<MobileAppReportConfig>
     public byte[] GeneratePdf(MobileAppReportConfig config)
     {
         QuestPDF.Settings.License = LicenseType.Community;
+        QuestPDF.Settings.EnableDebugging = true;
 
         // Serialize config to JSON
         var jsonOptions = new JsonSerializerOptions
@@ -96,7 +97,7 @@ public class MobileAppReportGenerator : IReportGenerator<MobileAppReportConfig>
 
     private void ComposeContent(IContainer container, MobileAppReportConfig config)
     {
-        container.PaddingVertical(10).Column(column =>
+        container.Column(column =>
         {
             // Executive Summary
             if (config.IncludeExecutiveSummary)
@@ -112,28 +113,26 @@ public class MobileAppReportGenerator : IReportGenerator<MobileAppReportConfig>
                 column.Item().PaddingTop(20);
             }
 
-            // Android Platform Performance
+            // Android Platform Performance (no page break)
             if (config.IncludeAndroidSection)
             {
                 column.Item().Element(c => ComposeAndroidSection(c, config));
                 column.Item().PaddingTop(20);
             }
 
-            // Platform Comparison
+            // Platform Comparison (no page break)
             if (config.IncludePlatformComparison)
             {
                 column.Item().Element(c => ComposePlatformComparison(c, config));
                 column.Item().PaddingTop(20);
             }
 
-            // High Variance Metrics
+            // High Variance Metrics (no page break)
             if (config.IncludeHighVarianceMetrics && config.IncludeLastPeriodData)
             {
                 column.Item().Element(c => ComposeHighVarianceMetrics(c, config));
                 column.Item().PaddingTop(20);
             }
-
-
         });
     }
 
@@ -161,7 +160,6 @@ public class MobileAppReportGenerator : IReportGenerator<MobileAppReportConfig>
     {
         container.Column(column =>
         {
-            column.Item().PageBreak();
             column.Item().Text("iOS Platform Performance")
                 .FontSize(16)
                 .Bold()
@@ -286,7 +284,8 @@ public class MobileAppReportGenerator : IReportGenerator<MobileAppReportConfig>
                         {
                             col.Item().Row(barRow =>
                             {
-                                if (currentBarWidth > 0)
+                                // Only show text in the blue bar if it's wide enough (at least 8%)
+                                if (currentBarWidth >= 0.08)
                                 {
                                     barRow.RelativeItem((float)currentBarWidth)
                                         .Height(20)
@@ -298,12 +297,34 @@ public class MobileAppReportGenerator : IReportGenerator<MobileAppReportConfig>
                                         .FontColor(Colors.White)
                                         .Bold();
                                 }
+                                else if (currentBarWidth > 0)
+                                {
+                                    // For very small bars, show bar without text
+                                    barRow.RelativeItem((float)currentBarWidth)
+                                        .Height(20)
+                                        .Background(Colors.Blue.Medium);
+                                }
 
                                 if (currentBarWidth < 1.0)
                                 {
-                                    barRow.RelativeItem((float)(1.0 - currentBarWidth))
-                                        .Height(20)
-                                        .Background(Colors.Grey.Lighten3);
+                                    if (currentBarWidth > 0 && currentBarWidth < 0.08)
+                                    {
+                                        // Show the label in the empty portion if bar was too small
+                                        barRow.RelativeItem((float)(1.0 - currentBarWidth))
+                                            .Height(20)
+                                            .Background(Colors.Grey.Lighten3)
+                                            .AlignMiddle()
+                                            .PaddingLeft(5)
+                                            .Text($"{FormatValue(currentDownloads)} ({currentPercentage:F1}%)")
+                                            .FontSize(8)
+                                            .FontColor(Colors.Black);
+                                    }
+                                    else
+                                    {
+                                        barRow.RelativeItem((float)(1.0 - currentBarWidth))
+                                            .Height(20)
+                                            .Background(Colors.Grey.Lighten3);
+                                    }
                                 }
                             });
                         });
@@ -326,51 +347,85 @@ public class MobileAppReportGenerator : IReportGenerator<MobileAppReportConfig>
 
         container.Column(column =>
         {
-            column.Item().Text("Daily Active Users by App Version (30-Day Avg)")
-                .FontSize(13)
-                .SemiBold()
-                .FontColor(Colors.Blue.Darken1);
+            // Header
+            column.Item().Row(row =>
+            {
+                row.RelativeItem().Column(headerColumn =>
+                {
+                    headerColumn.Item().Text("Daily Active Users by App Version (30-Day Avg)")
+                        .FontSize(13)
+                        .SemiBold()
+                        .FontColor(Colors.Blue.Darken1);
 
-            column.Item().PaddingTop(5).Text($"Distribution of {FormatValue(totalDAU)} daily active users across app versions:")
-                .FontSize(10)
-                .Italic();
+                    headerColumn.Item().PaddingTop(5).Text($"Distribution of {FormatValue(totalDAU)} daily active users across app versions:")
+                        .FontSize(10)
+                        .Italic();
+                });
+            });
 
+            // Version bars - each item is independently pageable
             column.Item().PaddingTop(10).Column(barColumn =>
             {
-                foreach (var version in versions.OrderByDescending(v => v.DailyActiveUsers))
+                foreach (var version in versions.OrderByDescending(v => v.VersionNumber))
                 {
                     var dau = version.DailyActiveUsers ?? 0;
                     var percentage = totalDAU > 0 ? (dau / (double)totalDAU) * 100 : 0;
                     var barWidth = totalDAU > 0 ? (dau / (double)totalDAU) : 0;
 
-                    barColumn.Item().PaddingBottom(8).Row(row =>
+                    // Each bar is a separate item that can break across pages
+                    barColumn.Item().PaddingBottom(6).Row(row =>
                     {
                         // Version label (left aligned, fixed width)
                         row.ConstantItem(120).AlignMiddle().Text($"Version {version.VersionNumber}")
-                            .FontSize(10)
+                            .FontSize(9)
                             .SemiBold()
                             .FontColor(Colors.Black);
 
                         // Bar visualization
                         row.RelativeItem().AlignMiddle().Row(barRow =>
                         {
-                            // Filled portion of bar
-                            barRow.RelativeItem((float)barWidth)
-                                .Height(20)
-                                .Background(Colors.Blue.Medium)
-                                .AlignMiddle()
-                                .PaddingHorizontal(5)
-                                .Text($"{FormatValue(dau)} ({percentage:F1}%)")
-                                .FontSize(9)
-                                .FontColor(Colors.White)
-                                .Bold();
+                            // Filled portion of bar - only show text if bar is wide enough (at least 10%)
+                            if (barWidth >= 0.10)
+                            {
+                                barRow.RelativeItem((float)barWidth)
+                                    .Height(18)
+                                    .Background(Colors.Blue.Medium)
+                                    .AlignMiddle()
+                                    .PaddingHorizontal(5)
+                                    .Text($"{FormatValue(dau)} ({percentage:F1}%)")
+                                    .FontSize(8)
+                                    .FontColor(Colors.White)
+                                    .Bold();
+                            }
+                            else
+                            {
+                                // For very small bars, just show colored bar without text
+                                barRow.RelativeItem((float)barWidth)
+                                    .Height(18)
+                                    .Background(Colors.Blue.Medium);
+                            }
 
-                            // Empty portion of bar
+                            // Empty portion of bar - show text here if the filled portion was too small
                             if (barWidth < 1.0)
                             {
-                                barRow.RelativeItem((float)(1.0 - barWidth))
-                                    .Height(20)
-                                    .Background(Colors.Grey.Lighten3);
+                                if (barWidth < 0.10)
+                                {
+                                    // Show the label in the empty portion if bar was too small
+                                    barRow.RelativeItem((float)(1.0 - barWidth))
+                                        .Height(18)
+                                        .Background(Colors.Grey.Lighten3)
+                                        .AlignMiddle()
+                                        .PaddingLeft(5)
+                                        .Text($"{FormatValue(dau)} ({percentage:F1}%)")
+                                        .FontSize(8)
+                                        .FontColor(Colors.Black);
+                                }
+                                else
+                                {
+                                    barRow.RelativeItem((float)(1.0 - barWidth))
+                                        .Height(18)
+                                        .Background(Colors.Grey.Lighten3);
+                                }
                             }
                         });
                     });
@@ -383,7 +438,6 @@ public class MobileAppReportGenerator : IReportGenerator<MobileAppReportConfig>
     {
         container.Column(column =>
         {
-            column.Item().PageBreak();
             column.Item().Text("Android Platform Performance")
                 .FontSize(16)
                 .Bold()
@@ -419,7 +473,7 @@ public class MobileAppReportGenerator : IReportGenerator<MobileAppReportConfig>
                 // Rows
                 AddTableRow(table, "Total Downloads", config.AndroidMetrics.TotalDownloads, config.AndroidMetrics.TotalDownloadsLast, config.AndroidMetrics.TotalDownloadsChange, config.IncludeLastPeriodData, 0);
                 AddTableRow(table, "Daily Downloads", config.AndroidMetrics.DailyDownloads, config.AndroidMetrics.DailyDownloadsLast, config.AndroidMetrics.DailyDownloadsChange, config.IncludeLastPeriodData, 1);
-                AddTableRow(table, "Total Crashes", config.AndroidMetrics.TotalCrashes, config.AndroidMetrics.TotalCrashesLast, config.AndroidMetrics.TotalCrashesChange, config.IncludeLastPeriodData, 2);
+                AddTableRow(table, "Crash % per Session", config.AndroidMetrics.CrashPercentPerSession, config.AndroidMetrics.CrashPercentPerSessionLast, config.AndroidMetrics.CrashPercentPerSessionChange, config.IncludeLastPeriodData, 2, true);
             }
             else
             {
@@ -439,7 +493,7 @@ public class MobileAppReportGenerator : IReportGenerator<MobileAppReportConfig>
                 // Rows
                 AddTableRow(table, "Total Downloads", config.AndroidMetrics.TotalDownloads, null, null, config.IncludeLastPeriodData, 0);
                 AddTableRow(table, "Daily Downloads", config.AndroidMetrics.DailyDownloads, null, null, config.IncludeLastPeriodData, 1);
-                AddTableRow(table, "Total Crashes", config.AndroidMetrics.TotalCrashes, null, null, config.IncludeLastPeriodData, 2);
+                AddTableRow(table, "Crash % per Session", config.AndroidMetrics.CrashPercentPerSession, null, null, config.IncludeLastPeriodData, 2, true);
             }
         });
     }
@@ -448,7 +502,6 @@ public class MobileAppReportGenerator : IReportGenerator<MobileAppReportConfig>
     {
         container.Column(column =>
         {
-            column.Item().PageBreak();
             column.Item().Text("Platform Comparison")
                 .FontSize(16)
                 .Bold()
@@ -488,9 +541,6 @@ public class MobileAppReportGenerator : IReportGenerator<MobileAppReportConfig>
 
                 AddPlatformComparisonRow(table, "Daily Downloads",
                     config.PlatformComparison.IOSDailyDownloads, config.PlatformComparison.AndroidDailyDownloads, config.IncludeLastPeriodData, 2);
-
-                AddPlatformComparisonRow(table, "Total Crashes",
-                    config.PlatformComparison.IOSTotalCrashes, config.PlatformComparison.AndroidTotalCrashes, config.IncludeLastPeriodData, 3);
             }
             else
             {
@@ -518,9 +568,6 @@ public class MobileAppReportGenerator : IReportGenerator<MobileAppReportConfig>
 
                 AddPlatformComparisonRow(table, "Daily Downloads",
                     config.PlatformComparison.IOSDailyDownloads, config.PlatformComparison.AndroidDailyDownloads, config.IncludeLastPeriodData, 2);
-
-                AddPlatformComparisonRow(table, "Total Crashes",
-                    config.PlatformComparison.IOSTotalCrashes, config.PlatformComparison.AndroidTotalCrashes, config.IncludeLastPeriodData, 3);
             }
         });
     }
@@ -549,8 +596,8 @@ public class MobileAppReportGenerator : IReportGenerator<MobileAppReportConfig>
             highVarianceItems.Add(("Total Downloads (Android)", "Android Metrics", config.AndroidMetrics.TotalDownloadsChange.Value));
         if (config.AndroidMetrics.DailyDownloadsChange.HasValue && Math.Abs(config.AndroidMetrics.DailyDownloadsChange.Value) > varianceThreshold)
             highVarianceItems.Add(("Daily Downloads (Android)", "Android Metrics", config.AndroidMetrics.DailyDownloadsChange.Value));
-        if (config.AndroidMetrics.TotalCrashesChange.HasValue && Math.Abs(config.AndroidMetrics.TotalCrashesChange.Value) > varianceThreshold)
-            highVarianceItems.Add(("Total Crashes (Android)", "Android Metrics", config.AndroidMetrics.TotalCrashesChange.Value));
+        if (config.AndroidMetrics.CrashPercentPerSessionChange.HasValue && Math.Abs(config.AndroidMetrics.CrashPercentPerSessionChange.Value) > varianceThreshold)
+            highVarianceItems.Add(("Crash % per Session (Android)", "Android Metrics", config.AndroidMetrics.CrashPercentPerSessionChange.Value));
 
         if (highVarianceItems.Count == 0)
             return;
