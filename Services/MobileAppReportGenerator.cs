@@ -273,7 +273,7 @@ public class MobileAppReportGenerator : IReportGenerator<MobileAppReportConfig>
 
                     barColumn.Item().PaddingBottom(10).Row(row =>
                     {
-                        // Left side: Source name (fixed width, bold and black like DAU)
+                        // Left side: Source name (fixed width, bold and black)
                         row.ConstantItem(120).AlignMiddle().Text(source.Name)
                             .FontSize(9)
                             .Bold()
@@ -343,7 +343,6 @@ public class MobileAppReportGenerator : IReportGenerator<MobileAppReportConfig>
         if (!versions.Any()) return;
 
         var totalDAU = versions.Sum(v => v.DailyActiveUsers ?? 0);
-        var maxDAU = versions.Max(v => v.DailyActiveUsers ?? 0);
 
         container.Column(column =>
         {
@@ -363,7 +362,7 @@ public class MobileAppReportGenerator : IReportGenerator<MobileAppReportConfig>
                 });
             });
 
-            // Version bars - each item is independently pageable
+            // Version bars - match download sources format
             column.Item().PaddingTop(10).Column(barColumn =>
             {
                 foreach (var version in versions.OrderByDescending(v => v.VersionNumber))
@@ -372,61 +371,62 @@ public class MobileAppReportGenerator : IReportGenerator<MobileAppReportConfig>
                     var percentage = totalDAU > 0 ? (dau / (double)totalDAU) * 100 : 0;
                     var barWidth = totalDAU > 0 ? (dau / (double)totalDAU) : 0;
 
-                    // Each bar is a separate item that can break across pages
-                    barColumn.Item().PaddingBottom(6).Row(row =>
+                    barColumn.Item().PaddingBottom(10).Row(row =>
                     {
-                        // Version label (left aligned, fixed width)
+                        // Left side: Version label (fixed width, bold and black)
                         row.ConstantItem(120).AlignMiddle().Text($"Version {version.VersionNumber}")
                             .FontSize(9)
-                            .SemiBold()
+                            .Bold()
                             .FontColor(Colors.Black);
 
-                        // Bar visualization
-                        row.RelativeItem().AlignMiddle().Row(barRow =>
+                        // Right side: Bar with value
+                        row.RelativeItem().Column(col =>
                         {
-                            // Filled portion of bar - only show text if bar is wide enough (at least 10%)
-                            if (barWidth >= 0.10)
+                            col.Item().Row(barRow =>
                             {
-                                barRow.RelativeItem((float)barWidth)
-                                    .Height(18)
-                                    .Background(Colors.Blue.Medium)
-                                    .AlignMiddle()
-                                    .PaddingHorizontal(5)
-                                    .Text($"{FormatValue(dau)} ({percentage:F1}%)")
-                                    .FontSize(8)
-                                    .FontColor(Colors.White)
-                                    .Bold();
-                            }
-                            else
-                            {
-                                // For very small bars, just show colored bar without text
-                                barRow.RelativeItem((float)barWidth)
-                                    .Height(18)
-                                    .Background(Colors.Blue.Medium);
-                            }
-
-                            // Empty portion of bar - show text here if the filled portion was too small
-                            if (barWidth < 1.0)
-                            {
-                                if (barWidth < 0.10)
+                                // Only show text in the blue bar if it's wide enough (at least 15%)
+                                if (barWidth >= 0.15)
                                 {
-                                    // Show the label in the empty portion if bar was too small
-                                    barRow.RelativeItem((float)(1.0 - barWidth))
-                                        .Height(18)
-                                        .Background(Colors.Grey.Lighten3)
+                                    barRow.RelativeItem((float)barWidth)
+                                        .Height(20)
+                                        .Background(Colors.Blue.Medium)
                                         .AlignMiddle()
                                         .PaddingLeft(5)
                                         .Text($"{FormatValue(dau)} ({percentage:F1}%)")
                                         .FontSize(8)
-                                        .FontColor(Colors.Black);
+                                        .FontColor(Colors.White)
+                                        .Bold();
                                 }
-                                else
+                                else if (barWidth > 0)
                                 {
-                                    barRow.RelativeItem((float)(1.0 - barWidth))
-                                        .Height(18)
-                                        .Background(Colors.Grey.Lighten3);
+                                    // For narrower bars, show bar without text
+                                    barRow.RelativeItem((float)barWidth)
+                                        .Height(20)
+                                        .Background(Colors.Blue.Medium);
                                 }
-                            }
+
+                                if (barWidth < 1.0)
+                                {
+                                    if (barWidth < 0.15)
+                                    {
+                                        // Show the label in the empty portion if bar is too narrow
+                                        barRow.RelativeItem((float)(1.0 - barWidth))
+                                            .Height(20)
+                                            .Background(Colors.Grey.Lighten3)
+                                            .AlignMiddle()
+                                            .PaddingLeft(5)
+                                            .Text($"{FormatValue(dau)} ({percentage:F1}%)")
+                                            .FontSize(8)
+                                            .FontColor(Colors.Black);
+                                    }
+                                    else
+                                    {
+                                        barRow.RelativeItem((float)(1.0 - barWidth))
+                                            .Height(20)
+                                            .Background(Colors.Grey.Lighten3);
+                                    }
+                                }
+                            });
                         });
                     });
                 }

@@ -512,7 +512,7 @@
                                 Download Sources
                                 @if (!string.IsNullOrWhiteSpace(iosAppIdentifier))
                                 {
-                                    <button type="button" class="btn btn-sm btn-outline-primary ms-2" @onclick="@(() => OpenIOSMetric("https://appstoreconnect.apple.com/analytics/app/ltd/" + iosAppIdentifier + "/acquisition/sources"))" title="Open in App Store Connect">
+                                    <button type="button" class="btn btn-sm btn-primary ms-2" @onclick="@(() => OpenIOSMetric("https://appstoreconnect.apple.com/analytics/app/ltd/" + iosAppIdentifier + "/acquisition/sources"))" title="Open in App Store Connect">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
                                             <path d="M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5z"/>
                                             <path d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0v-5z"/>
@@ -570,7 +570,7 @@
                                             <InputNumber TValue="double?" @bind-Value="config.AndroidMetrics.TotalDownloads" class="form-control" />
                                             @if (!string.IsNullOrWhiteSpace(androidAccountIdentifier) && !string.IsNullOrWhiteSpace(androidAppIdentifier))
                                             {
-                                                <button type="button" class="btn btn-success btn-metric-link" @onclick="@(() => OpenAndroidMetric("https://play.google.com/console/u/0/developers/" + androidAccountIdentifier + "/app/" + androidAppIdentifier + "/grow-overview"))" title="Open in Google Play Console">
+                                                <button type="button" class="btn btn-success btn-metric-link" @onclick="@(() => OpenAndroidMetric("https://play.google.com/console/u/0/developers/" + androidAccountIdentifier + "/app/" + androidAppIdentifier + "/reporting/acquisition/overview?dateRange=2020_02_25-" + GetReportDateForURL() + "&storePerformanceMetric=METRIC_ACQUISITION&storeOutcomeViewBy=StoreOutcomeTraffic.STORE_BROWSE"))" title="Open in Google Play Console">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                                                         <path d="M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5z"/>
                                                         <path d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0v-5z"/>
@@ -587,7 +587,7 @@
                                             <InputNumber TValue="double?" @bind-Value="config.AndroidMetrics.DailyDownloads" class="form-control" />
                                             @if (!string.IsNullOrWhiteSpace(androidAccountIdentifier) && !string.IsNullOrWhiteSpace(androidAppIdentifier))
                                             {
-                                                <button type="button" class="btn btn-success btn-metric-link" @onclick="@(() => OpenAndroidMetric("https://play.google.com/console/u/0/developers/" + androidAccountIdentifier + "/app/" + androidAppIdentifier + "/statistics?metrics=DEVICE_ACQUISITION-ALL-EVENTS-PER_INTERVAL-DAY&dimension=COUNTRY&dimensionValues=OVERALL%2CUS&dateRange=2025_11_14-2025_12_11&tab=APP_STATISTICS&ctpMetric=DAU_MAU-ACQUISITION_UNSPECIFIED-COUNT_UNSPECIFIED-CALCULATION_UNSPECIFIED-DAY&ctpDateRange=2025_11_14-2025_12_11&ctpDimension=COUNTRY&ctpDimensionValue=OVERALL&ctpPeersetKey=3%3Acfa56881b47b9ea9"))" title="Open in Google Play Console">
+                                                <button type="button" class="btn btn-success btn-metric-link" @onclick="@(() => OpenAndroidMetric("https://play.google.com/console/u/0/developers/" + androidAccountIdentifier + "/app/" + androidAppIdentifier + "/reporting/acquisition/overview?dateRange=2020_02_25-" + GetReportDateForURL() + "&storePerformanceMetric=METRIC_ACQUISITION&storeOutcomeViewBy=StoreOutcomeTraffic.STORE_BROWSE"))" title="Open in Google Play Console">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                                                         <path d="M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5z"/>
                                                         <path d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0v-5z"/>
@@ -1199,6 +1199,15 @@
         }
     }
 
+    private string GetReportDateForURL()
+    {
+        if (!config.ReportYear.HasValue || !config.ReportMonth.HasValue || !config.ReportDay.HasValue)
+        {
+            return DateTime.Now.ToString("yyyy_MM_dd");
+        }
+        return new DateTime(config.ReportYear.Value, config.ReportMonth.Value, config.ReportDay.Value).ToString("yyyy_MM_dd");
+    }
+
     private async Task OpenAndroidMetric(string url)
     {
         try
@@ -1263,3 +1272,4 @@
         }
     }
 }
+

@@ -3,7 +3,7 @@ namespace ReportBuilder.Models;
 public class MobileAppReportConfig
 {
     // Version
-    public string Version { get; set; } = "1.04";
+    public string Version { get; set; } = "1.05";
 
     // General Information
     public string CompanyName { get; set; } = string.Empty;

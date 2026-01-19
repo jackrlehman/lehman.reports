@@ -17,7 +17,7 @@ public static class AppConstants
     public const string MobileAppReportName = "Mobile App Store Performance Report";
     
     // Default Values
-    public const string DefaultReportVersion = "1.04";
+    public const string DefaultReportVersion = "1.05";
     
     // UI Messages
     public const string ErrorPdfLoadFailed = "Failed to load Blazor app. Make sure dotnet server is running on port 5000.";
